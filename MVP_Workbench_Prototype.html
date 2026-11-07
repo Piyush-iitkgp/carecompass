@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CareCompass Workbench MVP</title><style>
+:root{--navy:#0B1F5C;--blue:#1F5FE0;--pale:#EEF3FC;--line:#DCE3F0;--ink:#15203D;--mute:#5A6478;--red:#C9302C;--redbg:#FDECEC;--amber:#B86E00;--amberbg:#FFF3D9;--green:#14804A;--greenbg:#E5F5EC;--violet:#6B3FD6;--violetbg:#F1ECFD;--bg:#F4F6FB}
+*{box-sizing:border-box}html{scroll-behavior:auto}
+body{margin:0;font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;color:var(--ink);background:var(--bg);font-size:13px;line-height:1.4}
+a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+.app{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:100vh}
+.side{background:var(--navy);color:#fff;padding:16px 12px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh;overflow:auto}
+.logo{font-weight:700;font-size:18px;padding:0 6px}.logo small{display:block;font-weight:400;font-size:11px;opacity:.75}
+.nav{display:flex;flex-direction:column;gap:2px;margin-top:14px}
+.nav a{color:#D7E1F7;padding:8px 10px;border-radius:8px;display:flex;justify-content:space-between}
+.nav a:hover{background:rgba(255,255,255,.1);text-decoration:none}.nav a.on{background:rgba(255,255,255,.16);color:#fff}
+.nav .ct{background:#fff;color:var(--navy);border-radius:10px;padding:0 7px;font-size:11px;font-weight:700}
+.sidehead{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;opacity:.6;margin:14px 10px 2px}
+.plink{color:#D7E1F7;padding:5px 10px;border-radius:6px;font-size:12px;display:flex;justify-content:space-between}.plink:hover{background:rgba(255,255,255,.1);text-decoration:none}
+.me{margin-top:auto;font-size:12px;opacity:.9;border-top:1px solid rgba(255,255,255,.2);padding-top:10px}
+.main{padding:12px 20px 30px;min-width:0}
+.proto{background:#FFF8E6;border:1px solid #F1DBA5;color:#6B4A00;border-radius:8px;padding:6px 10px;font-size:12px;margin-bottom:10px}
+.screen{display:none}#queue{display:block}.screen:target{display:block}.screen:target~#queue{display:none}
+.topbar{display:flex;align-items:center;gap:14px;margin:4px 0 12px;flex-wrap:wrap}
+.tt{display:flex;align-items:baseline;gap:12px;flex:1;min-width:280px}.tt h1{font-size:21px;margin:0;white-space:nowrap}.sub{color:var(--mute)}
+.legend{display:flex;gap:10px;align-items:center;color:var(--mute);font-size:11.5px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;border-radius:999px;padding:2px 9px;font-size:11.5px;font-weight:600;white-space:nowrap;margin:1px 2px 1px 0}
+.c-red{background:var(--redbg);color:var(--red)}.c-amber{background:var(--amberbg);color:var(--amber)}.c-green{background:var(--greenbg);color:var(--green)}.c-blue{background:var(--pale);color:var(--blue)}.c-violet{background:var(--violetbg);color:var(--violet)}.c-gray{background:#EEF0F4;color:#4A5466}
+.t-red{color:var(--red)}.t-amber{color:var(--amber)}.t-violet{color:var(--violet)}.ink{color:var(--ink)}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px;flex:none}.d-red{background:var(--red)}.d-amber{background:#E9A100}.d-green{background:var(--green)}.d-blue{background:var(--blue)}.d-gray{background:#A0A8B8}
+.ai{font-size:10.5px;font-weight:700;color:var(--violet);background:var(--violetbg);border-radius:6px;padding:1px 6px;white-space:nowrap}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+.card h3{margin:0 0 8px;font-size:12.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--navy);display:flex;gap:8px;align-items:center}
+.cardhead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}.cardhead h3{margin:0}
+.aic{border:1px dashed #B9A6F3;background:#FCFAFF}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px}.kpi b{font-size:22px;display:block}.kpi span{color:var(--mute);font-size:12px}.kpi em{font-style:normal;opacity:.8}
+.filters{display:flex;gap:6px;flex-wrap:wrap}.f{border:1px solid var(--line);background:#fff;border-radius:999px;padding:4px 11px;font:inherit;font-size:12px;cursor:pointer}.f.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.formula{color:var(--mute);font-size:12px;margin:0 0 6px}
+table{width:100%;border-collapse:collapse}th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--mute);font-weight:600;padding:7px 8px;border-bottom:1px solid var(--line)}
+td{padding:9px 8px;border-bottom:1px solid #EDF1F7;vertical-align:top}.qrow:hover{background:#F7FAFF}
+.score{font-weight:800;font-size:17px;color:var(--navy)}.bar{height:5px;border-radius:3px;background:#E4E9F3;margin-top:4px;width:60px;overflow:hidden}.bar i{display:block;height:100%;background:var(--blue)}
+.tiny{font-size:10.5px;color:var(--mute);margin-top:3px}.nbaq{font-weight:600;margin-bottom:3px}.nowrap{white-space:nowrap}.mute{color:var(--mute)}.sm{font-size:11.5px}
+.foot{color:var(--mute);font-size:11.5px;margin-top:8px}
+.btn{display:inline-flex;align-items:center;gap:6px;border-radius:8px;padding:6px 11px;font:inherit;font-weight:600;font-size:12px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;text-decoration:none!important}
+.btn.p{background:var(--blue);border-color:var(--blue);color:#fff}.btn.sm{padding:4px 9px}.btn.xs{padding:2px 7px;font-size:11px}.btn.ghost{color:var(--mute)}.btn[disabled]{opacity:.5;cursor:not-allowed}
+.btn.done{background:var(--greenbg);border-color:#BFE3CE;color:var(--green)}
+.row{display:flex;gap:8px;align-items:center;margin-top:10px}.wrap{flex-wrap:wrap}
+.mhead{display:flex;gap:14px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;flex-wrap:wrap}
+.avatar{width:44px;height:44px;border-radius:50%;background:var(--pale);color:var(--navy);display:grid;place-items:center;font-weight:800;font-size:16px}
+.mid{flex:1;min-width:260px}.nm{font-size:18px;font-weight:700}.nm .mute{font-size:13px;font-weight:400}
+.clocks{display:flex;gap:8px;flex-wrap:wrap}.clock{border-radius:10px;padding:6px 10px;min-width:150px}.clock b{display:block;font-size:12.5px}.clock span{font-size:11px}
+.fold{font-size:11px;color:var(--blue);border-top:1.5px dashed #9DB8F5;margin:10px 0 8px;padding-top:3px;text-transform:uppercase;letter-spacing:.05em}.fold.below{color:var(--mute);border-color:#C9D2E3}
+.g360{display:grid;grid-template-columns:1.25fr 1fr;gap:12px}.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.col{min-width:0}
+ol.brief{margin:0 0 6px;padding-left:18px}ol.brief li{margin-bottom:4px}
+.src{font-size:10.5px;color:var(--blue);background:var(--pale);border-radius:5px;padding:0 5px;white-space:nowrap}
+.conf td,.conf th{padding:6px 7px;font-size:12px}.bad{background:var(--redbg)}.warn{background:var(--amberbg)}tr.ok{background:var(--greenbg)!important}
+.cbtns{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}.conf td.cstat{min-width:200px}
+.nba{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #EDF1F7}.nba:last-of-type{border-bottom:0}
+.nba.accepted{opacity:.65}.nba.dismissed{opacity:.45;text-decoration:line-through}
+.num{width:22px;height:22px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font-weight:700;font-size:12px;flex:none}
+.nbody{flex:1}.nbtns{display:flex;flex-direction:column;gap:4px}.dismissbox{margin-top:6px;display:flex;gap:6px}.dismissbox[hidden]{display:none}
+select{font:inherit;font-size:12px;border:1px solid var(--line);border-radius:6px;padding:2px 6px}
+.contact{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #EDF1F7}.contact b{width:118px;flex:none}.cmeta{flex:1}.strike{text-decoration:line-through;color:#98A1B2}
+.fresh{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}.fr{border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:12px;display:grid;grid-template-columns:auto 1fr;column-gap:2px}.fr .mute{grid-column:2}
+.cp ul{margin:2px 0 6px;padding-left:18px}.tl{list-style:none;margin:0;padding:0}.tl li{display:grid;grid-template-columns:90px 14px 1fr;gap:4px;padding:3px 0;font-size:12px;align-items:center}.sd{margin-top:6px}
+.tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}.tabs a{padding:6px 12px;border-radius:8px;background:#fff;border:1px solid var(--line);color:var(--ink);font-weight:600}.tabs a.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.gout{display:grid;grid-template-columns:.95fr 1.35fr .85fr;gap:12px}
+.outcomes{display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin-top:10px}.alog{margin:6px 0 0;padding-left:16px;font-size:12px}
+textarea{width:100%;font:inherit;font-size:12.5px;border:1px solid var(--line);border-radius:8px;padding:8px;resize:vertical;background:#F8FAFD}
+.thread{margin-top:8px;display:flex;flex-direction:column;gap:6px}.bub{max-width:85%;border-radius:12px;padding:6px 10px;font-size:12px}.bub.out{align-self:flex-end;background:var(--blue);color:#fff}.bub.in{align-self:flex-start;background:#EEF0F4}
+.chk{display:flex;gap:8px;align-items:flex-start;padding:4px 0;font-size:12.5px;cursor:pointer}.chk input{margin-top:3px}
+.field{display:grid;grid-template-columns:140px 1fr 150px;gap:8px;padding:6px 0;border-bottom:1px solid #EDF1F7;font-size:12px;align-items:start}.field .lab{color:var(--mute)}.tagc{display:flex;flex-direction:column;align-items:flex-start;gap:3px}
+.field.ok .tagc .chip{background:var(--greenbg);color:var(--green)}
+.signed{color:var(--green);font-weight:600;font-size:12px}.guard{background:#FFFBF2;border-color:#F2DDA8}.gl{margin:0;padding-left:16px;color:var(--mute);font-size:12px}
+.clk{margin-bottom:6px}.guide li{margin-bottom:6px}
+#toast{position:fixed;right:18px;bottom:18px;background:var(--navy);color:#fff;padding:10px 14px;border-radius:10px;font-size:12.5px;box-shadow:0 6px 20px rgba(0,0,0,.2);opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none}
+#toast.show{opacity:1;transform:none}
+@media (max-width:1100px){.g360,.gout,.g3{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:760px){.app{grid-template-columns:1fr}.side{position:static;height:auto}.qt th:nth-child(3),.qt td:nth-child(3){display:none}}
+</style></head>
+<body><div class="app">
+<aside class="side">
+  <div class="logo">CareCompass<small>Case Management Workbench · MVP</small></div>
+  <nav class="nav" aria-label="Main">
+    <a id="nav-q" href="#queue" class="on">Today's queue <span class="ct">5 of 48</span></a>
+    <a id="nav-m" href="#m-harold">Member 360</a>
+    <a id="nav-o" href="#o-harold">Outreach &amp; notes</a>
+    <a id="nav-g" href="#guide">How to use</a>
+  </nav>
+  <div class="sidehead">Members · priority</div><a class="plink" href="#m-harold"><span>Harold Brennan</span><span>88.8</span></a><a class="plink" href="#m-tasha"><span>Tasha Morgan</span><span>80.8</span></a><a class="plink" href="#m-darnell"><span>Darnell Price</span><span>71.3</span></a><a class="plink" href="#m-eleanor"><span>Eleanor Whitfield</span><span>68.5</span></a><a class="plink" href="#m-rosa"><span>Rosa Delgado</span><span>55.3</span></a>
+  <div class="me"><b>Maria Alvarez, RN, CCM</b><br>Complex CM + TOC · Ohio license<br>48 active cases<br><span style="opacity:.7">Evergreen Health Plan (fictional)</span></div>
+</aside>
+<main class="main">
+  <div class="proto">Clickable prototype · synthetic data only · scenario time Monday 9 Nov 2026, 8:02 am. Start with <a href="#guide">How to use</a>.</div>
+  <section id="m-harold" class="screen">
+  <div class="topbar"><div class="tt"><h1>Member 360</h1><span class="sub">#1 in queue · Transitions of Care</span></div>
+  <div class="legend"><span><span class="dot d-green"></span>fresh</span><span><span class="dot d-amber"></span>aging</span><span><span class="dot d-red"></span>stale / missing</span><span class="ai">AI</span><span>needs your confirmation</span></div></div>
+  <div class="mhead"><div class="avatar">HB</div>
+    <div class="mid"><div class="nm">Harold Brennan <span class="mute">71 M · EVG-100231 · Medicare Advantage HMO</span></div>
+    <div class="mute">Heart failure (EF 30%) · CKD 3a · Type 2 diabetes · PCP Dr. K. Iyer · Columbus, OH · Language: <b class="ink">English</b></div></div>
+    <div class="clocks"><div class="clock c-amber"><b>TOC contact (2 business days)</b><span>Due Tue 10 Nov · 1 day left</span></div><div class="clock c-amber"><b>7-day follow-up visit</b><span>Due Sat 14 Nov · not booked</span></div><div class="clock c-green"><b>HEDIS TRC med-rec</b><span>Due 7 Dec</span></div></div></div>
+  <div class="fold">Above the fold: why now · what next · what disagrees</div>
+  <div class="g360"><div class="col">
+    <div class="card aic"><div class="cardhead"><h3><span class="ai">AI</span> Why now: 30-second brief</h3><span class="mute sm">Each line cites its source · generated 8:00 am</span></div>
+      <ol class="brief"><li>Admitted Wed 4 Nov for acute-on-chronic systolic heart failure; discharged home Sat 7 Nov 14:10. <span class="src">ADT · 8 Nov</span></li><li>Discharge list starts Entresto, spironolactone, empagliflozin; lisinopril STOPPED; furosemide 20→40 mg; metformin held. <span class="src">CCD (partial)</span></li><li>Pharmacy still shows a 90-day lisinopril fill (20 Oct). Entresto claim REJECTED 7 Nov: prior auth required. <span class="src">PBM · 7 Nov</span></li><li>K+ 5.1 mmol/L and creatinine 1.6 at discharge, on new spironolactone. <span class="src">Labs · 7 Nov</span></li><li>Home health starts Tue 10 Nov. No cardiology/PCP visit booked. <span class="src">UM · Scheduling</span></li></ol>
+      <div class="mute sm">Summary is grounded only in the records listed. Open a source chip to see the raw record.</div></div>
+    <div class="card"><div class="cardhead"><h3>Medication reconciliation: 3 sources disagree</h3><span class="chip c-violet" >Nurse resolves</span></div>
+      <table class="conf"><thead><tr><th>Drug</th><th>Discharge CCD · 7 Nov</th><th>Pharmacy fills</th><th>CM note · 2 Oct</th><th>Status</th></tr></thead><tbody><tr class="crow bad" data-i="0">
+    <td><b>Lisinopril 20 mg</b></td><td>STOPPED</td><td>Active · 90-day fill 20 Oct</td><td>Taking</td>
+    <td class="cstat"><span class="chip c-red" >Conflict: high</span><div class="cbtns"><button class="btn xs" data-resolve="Discharge CCD · 7 Nov">Use Discharge CCD</button><button class="btn xs" data-resolve="Pharmacy fills">Use Pharmacy fills</button><button class="btn xs" data-resolve="member">Ask member</button></div></td></tr><tr class="crow bad" data-i="1">
+    <td><b>Sacubitril/valsartan</b></td><td>NEW 24/26 mg BID</td><td>Rejected 7 Nov (PA)</td><td>—</td>
+    <td class="cstat"><span class="chip c-red" >Access gap</span><div class="cbtns"><button class="btn xs" data-resolve="Discharge CCD · 7 Nov">Use Discharge CCD</button><button class="btn xs" data-resolve="Pharmacy fills">Use Pharmacy fills</button><button class="btn xs" data-resolve="member">Ask member</button></div></td></tr><tr class="crow warn" data-i="2">
+    <td><b>Furosemide</b></td><td>40 mg daily</td><td>20 mg (12 Oct)</td><td>20 mg</td>
+    <td class="cstat"><span class="chip c-amber" >Dose change</span><div class="cbtns"><button class="btn xs" data-resolve="Discharge CCD · 7 Nov">Use Discharge CCD</button><button class="btn xs" data-resolve="Pharmacy fills">Use Pharmacy fills</button><button class="btn xs" data-resolve="member">Ask member</button></div></td></tr><tr class="crow warn" data-i="3">
+    <td><b>Metformin</b></td><td>HELD (eGFR 44)</td><td>—</td><td>500 mg BID</td>
+    <td class="cstat"><span class="chip c-amber" >Conflict</span><div class="cbtns"><button class="btn xs" data-resolve="Discharge CCD · 7 Nov">Use Discharge CCD</button><button class="btn xs" data-resolve="Pharmacy fills">Use Pharmacy fills</button><button class="btn xs" data-resolve="member">Ask member</button></div></td></tr><tr class="crow warn" data-i="4">
+    <td><b>Empagliflozin</b></td><td>NEW 10 mg</td><td>Ready, not picked up</td><td>—</td>
+    <td class="cstat"><span class="chip c-amber" >Not picked up</span><div class="cbtns"><button class="btn xs" data-resolve="Discharge CCD · 7 Nov">Use Discharge CCD</button><button class="btn xs" data-resolve="Pharmacy fills">Use Pharmacy fills</button><button class="btn xs" data-resolve="member">Ask member</button></div></td></tr><tr class="crow " data-i="5">
+    <td><b>Spironolactone</b></td><td>NEW 12.5 mg</td><td>Filled 7 Nov</td><td>—</td>
+    <td class="cstat"><span class="chip c-green" >Agrees</span></td></tr></tbody></table>
+      <div class="mute sm resolved-count"></div></div>
+  </div><div class="col">
+    <div class="card"><div class="cardhead"><h3>Next best actions</h3><span class="ai">AI-suggested</span></div>
+      <div class="nba" data-i="0"><div class="num">1</div><div class="nbody"><b>Call Harold this morning: medication reconciliation</b><div class="mute">Confirm lisinopril stopped. ACE-I must stop ≥36 h before Entresto. Teach-back on furosemide 40 mg.</div><span class="src">Why: CCD vs PBM vs CM note disagree</span>
+        <div class="dismissbox" hidden><select aria-label="Dismiss reason"><option>Already done</option><option>Not clinically relevant</option><option>Data is wrong</option><option>Member declined</option><option>Will do later</option></select><button class="btn xs" data-act="confirm-dismiss">Confirm</button></div></div>
+        <div class="nbtns"><button class="btn p sm" data-act="accept">Start</button><button class="btn sm ghost" data-act="dismiss">Dismiss</button></div></div><div class="nba" data-i="1"><div class="num">2</div><div class="nbody"><b>Unblock Entresto</b><div class="mute">Route the prior auth to the pharmacy team; check copay help.</div><span class="src">Why: PBM reject code 75</span>
+        <div class="dismissbox" hidden><select aria-label="Dismiss reason"><option>Already done</option><option>Not clinically relevant</option><option>Data is wrong</option><option>Member declined</option><option>Will do later</option></select><button class="btn xs" data-act="confirm-dismiss">Confirm</button></div></div>
+        <div class="nbtns"><button class="btn  sm" data-act="accept">Accept</button><button class="btn sm ghost" data-act="dismiss">Dismiss</button></div></div><div class="nba" data-i="2"><div class="num">3</div><div class="nbody"><b>Book the 7-day visit (by Sat 14 Nov)</b><div class="mute">Cardiology or PCP; offer the ride benefit.</div><span class="src">Why: HF 30-day readmission ~21%</span>
+        <div class="dismissbox" hidden><select aria-label="Dismiss reason"><option>Already done</option><option>Not clinically relevant</option><option>Data is wrong</option><option>Member declined</option><option>Will do later</option></select><button class="btn xs" data-act="confirm-dismiss">Confirm</button></div></div>
+        <div class="nbtns"><button class="btn  sm" data-act="accept">Accept</button><button class="btn sm ghost" data-act="dismiss">Dismiss</button></div></div><div class="nba" data-i="3"><div class="num">4</div><div class="nbody"><b>Ask home-health RN for K+ and weight on 12 Nov</b><div class="mute">K+ 5.1 on spironolactone + planned ARNI.</div><span class="src">Why: Labs</span>
+        <div class="dismissbox" hidden><select aria-label="Dismiss reason"><option>Already done</option><option>Not clinically relevant</option><option>Data is wrong</option><option>Member declined</option><option>Will do later</option></select><button class="btn xs" data-act="confirm-dismiss">Confirm</button></div></div>
+        <div class="nbtns"><button class="btn  sm" data-act="accept">Accept</button><button class="btn sm ghost" data-act="dismiss">Dismiss</button></div></div>
+      <div class="row"><a class="btn p" href="#o-harold">Open outreach &amp; notes →</a></div></div>
+    <div class="card"><div class="cardhead"><h3>Reach Harold</h3><span class="mute sm">numbers ranked by last successful use</span></div>
+      <div class="contact"><b class="">(614) 555-0142</b><span class="cmeta"><span class="">Mobile · member</span><br><span class="mute">Connected 2 Oct · verified Jul</span></span><span class="chip c-green" >High</span></div>
+      <div class="sm"><b>Best time:</b> 9–11 am (3 of 3 past connects) · <b>Channel:</b> Phone<br><b>Caregiver:</b> <span class="mute">Joan (spouse, 72) fills the pillbox; Oct note: 'more forgetful'</span></div></div>
+    <div class="card"><div class="cardhead"><h3>Data freshness</h3><span class="mute sm">as-of per source</span></div>
+      <div class="fresh"><div class="fr"><span class="dot d-green"></span><b>Eligibility</b><span class="mute">8 Nov</span></div><div class="fr"><span class="dot d-amber"></span><b>ADT alerts</b><span class="mute">8 Nov 09:02 · 19 h late</span></div><div class="fr"><span class="dot d-red"></span><b>Discharge summary</b><span class="mute">Pending · partial CCD</span></div><div class="fr"><span class="dot d-red"></span><b>Claims</b><span class="mute">Complete thru 30 Sep</span></div><div class="fr"><span class="dot d-green"></span><b>Pharmacy</b><span class="mute">7 Nov 16:40</span></div><div class="fr"><span class="dot d-green"></span><b>Labs</b><span class="mute">7 Nov</span></div><div class="fr"><span class="dot d-green"></span><b>Prior auth</b><span class="mute">7 Nov</span></div><div class="fr"><span class="dot d-amber"></span><b>SDOH / HRA</b><span class="mute">Apr 2026 · 7 mo</span></div></div></div>
+  </div></div>
+  <div class="fold below">Below the fold: history and plan</div>
+  <div class="g3">
+    <div class="card"><h3>Care plan</h3><div class="cp"><b>Goals</b><ul><li>No readmission in 30 days</li><li>Daily weights; call if +1 kg/day</li></ul><b>Barriers</b><ul><li>6 medication changes</li><li>Caregiver capacity uncertain</li></ul><b>Interventions</b><ul><li>Med reconciliation call</li><li>Entresto PA</li><li>Cardiology ≤ 7 days</li><li>Home-health K+ check</li></ul></div></div>
+    <div class="card"><h3>Timeline · all sources</h3><ul class="tl"><li><span class="mute">9 Nov 08:00</span><span class="dot d-blue"></span><span>Moved to #1: medication conflict detected</span></li><li><span class="mute">8 Nov 09:02</span><span class="dot d-amber"></span><span>ADT discharge alert received (19 h late)</span></li><li><span class="mute">7 Nov 16:40</span><span class="dot d-red"></span><span>Entresto claim rejected: prior auth</span></li><li><span class="mute">7 Nov 14:10</span><span class="dot d-blue"></span><span>Discharged home · I50.23</span></li><li><span class="mute">7 Nov</span><span class="dot d-green"></span><span>Home health approved, starts 10 Nov</span></li><li><span class="mute">4 Nov 18:22</span><span class="dot d-blue"></span><span>ED → inpatient admit ('SOB')</span></li><li><span class="mute">20 Oct</span><span class="dot d-gray"></span><span>Lisinopril 20 mg · 90-day fill</span></li><li><span class="mute">2 Oct</span><span class="dot d-gray"></span><span>CM call: connected, stable</span></li></ul></div>
+    <div class="card"><h3>Risk, social needs & care gaps</h3><div><b>High · 30-day readmission 0.38</b><div class="mute">Drivers: HF admit, EF 30% · 6 med changes · CKD · K+ 5.1</div></div>
+      <div class="sd"><span class="dot d-green"></span>Housing, food, transport: no issues <span class="src">HRA Apr 2026</span></div><div class="sd"><span class="dot d-amber"></span>Caregiver capacity uncertain <span class="src">CM note Oct</span></div>
+      <div class="sd"><b>HEDIS / Stars gaps:</b> TRC medication reconciliation (due 7 Dec)</div></div>
+  </div></section>
+<section id="m-tasha" class="screen">
+  <div class="topbar"><div class="tt"><h1>Member 360</h1><span class="sub">#2 in queue · Behavioral Health CM</span></div>
+  <div class="legend"><span><span class="dot d-green"></span>fresh</span><span><span class="dot d-amber"></span>aging</span><span><span class="dot d-red"></span>stale / missing</span><span class="ai">AI</span><span>needs your confirmation</span></div></div>
+  <div class="mhead"><div class="avatar">TM</div>
+    <div class="mid"><div class="nm">Tasha Morgan <span class="mute">27 F · EVG-300588 · Medicaid MCO</span></div>
+    <div class="mute">Major depression (severe) · PTSD · SUD history (restricted) · PCP Dr. L. Grant · Columbus, OH · Language: <b class="ink">English</b></div></div>
+    <div class="clocks"><div class="clock c-red"><b>HEDIS FUH 7-day follow-up</b><span>Closes TODAY 9 Nov</span></div><div class="clock c-amber"><b>FUH 30-day</b><span>Due 2 Dec</span></div><div class="clock c-green"><b>Discharge meds</b><span>Filled 2 Nov</span></div></div></div>
+  <div class="fold">Above the fold: why now · what next · what disagrees</div>
+  <div class="g360"><div class="col">
+    <div class="card aic"><div class="cardhead"><h3><span class="ai">AI</span> Why now: 30-second brief</h3><span class="mute sm">Each line cites its source · generated 8:00 am</span></div>
+      <ol class="brief"><li>Inpatient psych 27 Oct–2 Nov (severe depression); discharged to Franklin Family Shelter. <span class="src">ADT · 2 Nov</span></li><li>Discharge plan says 'outpatient BH appointment TBD': no visit found. <span class="src">CCD · 4 Nov</span></li><li>Sertraline and prazosin filled the day of discharge. <span class="src">PBM · 2 Nov</span></li><li>Housing screen says 'stable' (Jan, 10 months old); July note: eviction threat, 4-year-old son. <span class="src">HRA · CM note</span></li><li>Calls hit a full voicemail; she replied to a text in October. <span class="src">Contact history</span></li></ol>
+      <div class="mute sm">Summary is grounded only in the records listed. Open a source chip to see the raw record.</div></div>
+    <div class="card"><div class="cardhead"><h3>Housing &amp; address: sources disagree</h3><span class="chip c-violet" >Nurse resolves</span></div>
+      <table class="conf"><thead><tr><th>Field</th><th>Enrollment</th><th>ADT discharge · 2 Nov</th><th>HRA / notes</th><th>Status</th></tr></thead><tbody><tr class="crow bad" data-i="0">
+    <td><b>Address</b></td><td>1180 Maple Ave Apt 3</td><td>Franklin Family Shelter</td><td>Jul: eviction threat</td>
+    <td class="cstat"><span class="chip c-red" >Conflict</span><div class="cbtns"><button class="btn xs" data-resolve="Enrollment">Use Enrollment</button><button class="btn xs" data-resolve="ADT discharge · 2 Nov">Use ADT discharge</button><button class="btn xs" data-resolve="member">Ask member</button></div></td></tr><tr class="crow bad" data-i="1">
+    <td><b>Housing</b></td><td>—</td><td>Shelter</td><td>HRA Jan: 'stable'</td>
+    <td class="cstat"><span class="chip c-red" >Stale screen</span><div class="cbtns"><button class="btn xs" data-resolve="Enrollment">Use Enrollment</button><button class="btn xs" data-resolve="ADT discharge · 2 Nov">Use ADT discharge</button><button class="btn xs" data-resolve="member">Ask member</button></div></td></tr><tr class="crow warn" data-i="2">
+    <td><b>Best channel</b></td><td>Mobile (prepaid)</td><td>—</td><td>SMS replied 8 Oct; VM full</td>
+    <td class="cstat"><span class="chip c-amber" >Use SMS</span><div class="cbtns"><button class="btn xs" data-resolve="Enrollment">Use Enrollment</button><button class="btn xs" data-resolve="ADT discharge · 2 Nov">Use ADT discharge</button><button class="btn xs" data-resolve="member">Ask member</button></div></td></tr><tr class="crow " data-i="3">
+    <td><b>SUD history</b></td><td>—</td><td>Redacted (42 CFR Part 2)</td><td>Consent not on file</td>
+    <td class="cstat"><span class="chip c-gray" >Restricted</span><div class="cbtns"><button class="btn xs" data-resolve="Enrollment">Use Enrollment</button><button class="btn xs" data-resolve="ADT discharge · 2 Nov">Use ADT discharge</button><button class="btn xs" data-resolve="member">Ask member</button></div></td></tr></tbody></table>
+      <div class="mute sm resolved-count"></div></div>
+  </div><div class="col">
+    <div class="card"><div class="cardhead"><h3>Next best actions</h3><span class="ai">AI-suggested</span></div>
+      <div class="nba" data-i="0"><div class="num">1</div><div class="nbody"><b>Text before 9 am, then call</b><div class="mute">Offer a same-day telehealth slot with the BH clinic (warm handoff).</div><span class="src">Why: FUH closes today</span>
+        <div class="dismissbox" hidden><select aria-label="Dismiss reason"><option>Already done</option><option>Not clinically relevant</option><option>Data is wrong</option><option>Member declined</option><option>Will do later</option></select><button class="btn xs" data-act="confirm-dismiss">Confirm</button></div></div>
+        <div class="nbtns"><button class="btn p sm" data-act="accept">Start</button><button class="btn sm ghost" data-act="dismiss">Dismiss</button></div></div><div class="nba" data-i="1"><div class="num">2</div><div class="nbody"><b>Safety check on contact</b><div class="mute">Nurse-led screen (C-SSRS). AI does not assess risk.</div><span class="src">Why: Recent SI admission</span>
+        <div class="dismissbox" hidden><select aria-label="Dismiss reason"><option>Already done</option><option>Not clinically relevant</option><option>Data is wrong</option><option>Member declined</option><option>Will do later</option></select><button class="btn xs" data-act="confirm-dismiss">Confirm</button></div></div>
+        <div class="nbtns"><button class="btn  sm" data-act="accept">Accept</button><button class="btn sm ghost" data-act="dismiss">Dismiss</button></div></div><div class="nba" data-i="2"><div class="num">3</div><div class="nbody"><b>Co-assign a social worker</b><div class="mute">Housing, child, shelter case manager.</div><span class="src">Why: ADT disposition</span>
+        <div class="dismissbox" hidden><select aria-label="Dismiss reason"><option>Already done</option><option>Not clinically relevant</option><option>Data is wrong</option><option>Member declined</option><option>Will do later</option></select><button class="btn xs" data-act="confirm-dismiss">Confirm</button></div></div>
+        <div class="nbtns"><button class="btn  sm" data-act="accept">Accept</button><button class="btn sm ghost" data-act="dismiss">Dismiss</button></div></div><div class="nba" data-i="3"><div class="num">4</div><div class="nbody"><b>Update address + re-screen SDOH</b><div class="mute">Replace the stale 'stable housing' answer.</div><span class="src">Why: HRA 10 months old</span>
+        <div class="dismissbox" hidden><select aria-label="Dismiss reason"><option>Already done</option><option>Not clinically relevant</option><option>Data is wrong</option><option>Member declined</option><option>Will do later</option></select><button class="btn xs" data-act="confirm-dismiss">Confirm</button></div></div>
+        <div class="nbtns"><button class="btn  sm" data-act="accept">Accept</button><button class="btn sm ghost" data-act="dismiss">Dismiss</button></div></div>
+      <div class="row"><a class="btn p" href="#o-tasha">Open outreach &amp; notes →</a></div></div>
+    <div class="card"><div class="cardhead"><h3>Reach Tasha</h3><span class="mute sm">numbers ranked by last successful use</span></div>
+      <div class="contact"><b class="">(614) 555-0119</b><span class="cmeta"><span class="">Mobile (prepaid) · SMS</span><br><span class="mute">Replied to SMS 8 Oct; calls → voicemail full</span></span><span class="chip c-amber" >Medium</span></div>
+      <div class="sm"><b>Best time:</b> Midday; text first · <b>Channel:</b> SMS, then call<br><b>Caregiver:</b> <span class="mute">Son (4). Shelter staff can relay messages (needs consent)</span></div></div>
+    <div class="card"><div class="cardhead"><h3>Data freshness</h3><span class="mute sm">as-of per source</span></div>
+      <div class="fresh"><div class="fr"><span class="dot d-green"></span><b>ADT alerts</b><span class="mute">2 Nov 12:01</span></div><div class="fr"><span class="dot d-green"></span><b>Discharge summary</b><span class="mute">Received 4 Nov</span></div><div class="fr"><span class="dot d-green"></span><b>Pharmacy</b><span class="mute">2 Nov</span></div><div class="fr"><span class="dot d-red"></span><b>Claims</b><span class="mute">Thru 30 Sep</span></div><div class="fr"><span class="dot d-red"></span><b>SDOH / HRA</b><span class="mute">Jan 2026 · 10 mo</span></div><div class="fr"><span class="dot d-amber"></span><b>Contact</b><span class="mute">Last connect 15 Jul</span></div><div class="fr"><span class="dot d-gray"></span><b>SUD records</b><span class="mute">Consent-gated</span></div><div class="fr"><span class="dot d-green"></span><b>Care gaps</b><span class="mute">Live</span></div></div></div>
+  </div></div>
+  <div class="fold below">Below the fold: history and plan</div>
+  <div class="g3">
+    <div class="card"><h3>Care plan</h3><div class="cp"><b>Goals</b><ul><li>BH visit within 7 days</li><li>Stable housing for her and her son</li></ul><b>Barriers</b><ul><li>Prepaid phone, voicemail full</li><li>Shelter stay; stale address</li></ul><b>Interventions</b><ul><li>SMS + same-day telehealth</li><li>Social worker co-assigned</li><li>Address + SDOH update</li></ul></div></div>
+    <div class="card"><h3>Timeline · all sources</h3><ul class="tl"><li><span class="mute">9 Nov 08:00</span><span class="dot d-red"></span><span>FUH 7-day window closes today</span></li><li><span class="mute">4 Nov</span><span class="dot d-blue"></span><span>Discharge summary: appointment 'TBD'</span></li><li><span class="mute">3 Nov 09:30</span><span class="dot d-gray"></span><span>Call → voicemail full</span></li><li><span class="mute">2 Nov 11:30</span><span class="dot d-blue"></span><span>Discharged to shelter</span></li><li><span class="mute">2 Nov</span><span class="dot d-green"></span><span>Sertraline + prazosin filled</span></li><li><span class="mute">27 Oct 21:05</span><span class="dot d-red"></span><span>Inpatient psych admit</span></li><li><span class="mute">8 Oct</span><span class="dot d-green"></span><span>Replied to SMS</span></li><li><span class="mute">15 Jul</span><span class="dot d-gray"></span><span>Connected: eviction threat</span></li></ul></div>
+    <div class="card"><h3>Risk, social needs & care gaps</h3><div><b>High · BH readmission 0.33</b><div class="mute">Drivers: Recent psych stay · housing loss · prior SUD</div></div>
+      <div class="sd"><span class="dot d-red"></span>Housing: shelter since 2 Nov <span class="src">ADT disposition</span></div><div class="sd"><span class="dot d-amber"></span>Food: 'often worried' <span class="src">HRA Jan · stale</span></div>
+      <div class="sd"><b>HEDIS / Stars gaps:</b> FUH 7-day (closes today) · FUH 30-day (2 Dec)</div></div>
+  </div></section>
+<section id="m-darnell" class="screen">
+  <div class="topbar"><div class="tt"><h1>Member 360</h1><span class="sub">#3 in queue · Complex CM · frequent ED use</span></div>
+  <div class="legend"><span><span class="dot d-green"></span>fresh</span><span><span class="dot d-amber"></span>aging</span><span><span class="dot d-red"></span>stale / missing</span><span class="ai">AI</span><span>needs your confirmation</span></div></div>
+  <div class="mhead"><div class="avatar">DP</div>
+    <div class="mid"><div class="nm">Darnell Price <span class="mute">34 M · EVG-300412 · Medicaid MCO</span></div>
+    <div class="mute">Severe persistent asthma · anxiety · PCP Dr. M. Okafor · Cleveland, OH · Language: <b class="ink">English</b></div></div>
+    <div class="clocks"><div class="clock c-red"><b>ED discharge</b><span>03:40 today · reach while reachable</span></div><div class="clock c-amber"><b>Follow-up after ED</b><span>Due 16 Nov</span></div><div class="clock c-amber"><b>HEDIS AMR</b><span>0.25 (target ≥ 0.5)</span></div></div></div>
+  <div class="fold">Above the fold: why now · what next · what disagrees</div>
+  <div class="g360"><div class="col">
+    <div class="card aic"><div class="cardhead"><h3><span class="ai">AI</span> Why now: 30-second brief</h3><span class="mute sm">Each line cites its source · generated 8:00 am</span></div>
+      <ol class="brief"><li>5 ED visits in 82 days (18 Aug → 8 Nov); only 2 visible in paid claims. <span class="src">ADT · Claims</span></li><li>No controller inhaler since 14 Jun; 3 rescue-inhaler fills in 33 days. <span class="src">PBM</span></li><li>Phone on file 'not in service' ×5. Pharmacy (27 Oct) and ED registration (9 Nov) both show (216) 555-0188. <span class="src">PBM · HIE</span></li><li>No PCP visit in 14 months; HRA never completed. <span class="src">Claims · HRA</span></li><li>Duplicate ADT record for 24 Oct merged automatically. <span class="src">Data quality</span></li></ol>
+      <div class="mute sm">Summary is grounded only in the records listed. Open a source chip to see the raw record.</div></div>
+    <div class="card"><div class="cardhead"><h3>Contact data: sources disagree</h3><span class="chip c-violet" >Nurse resolves</span></div>
+      <table class="conf"><thead><tr><th>Field</th><th>Enrollment</th><th>Pharmacy · 27 Oct</th><th>ED registration · 9 Nov</th><th>Status</th></tr></thead><tbody><tr class="crow bad" data-i="0">
+    <td><b>Phone</b></td><td>(216) 555-0163</td><td>(216) 555-0188</td><td>(216) 555-0188</td>
+    <td class="cstat"><span class="chip c-red" >Use new #</span><div class="cbtns"><button class="btn xs" data-resolve="Enrollment">Use Enrollment</button><button class="btn xs" data-resolve="Pharmacy · 27 Oct">Use Pharmacy</button><button class="btn xs" data-resolve="member">Ask member</button></div></td></tr><tr class="crow warn" data-i="1">
+    <td><b>Address</b></td><td>Cleveland 44105</td><td>—</td><td>New address (sister)</td>
+    <td class="cstat"><span class="chip c-amber" >Verify</span><div class="cbtns"><button class="btn xs" data-resolve="Enrollment">Use Enrollment</button><button class="btn xs" data-resolve="Pharmacy · 27 Oct">Use Pharmacy</button><button class="btn xs" data-resolve="member">Ask member</button></div></td></tr><tr class="crow warn" data-i="2">
+    <td><b>ED visits, 90 days</b></td><td>—</td><td>—</td><td>5 (ADT) vs 2 (claims)</td>
+    <td class="cstat"><span class="chip c-amber" >Claims lag</span><div class="cbtns"><button class="btn xs" data-resolve="Enrollment">Use Enrollment</button><button class="btn xs" data-resolve="Pharmacy · 27 Oct">Use Pharmacy</button><button class="btn xs" data-resolve="member">Ask member</button></div></td></tr></tbody></table>
+      <div class="mute sm resolved-count"></div></div>
+  </div><div class="col">
+    <div class="card"><div class="cardhead"><h3>Next best actions</h3><span class="ai">AI-suggested</span></div>
+      <div class="nba" data-i="0"><div class="num">1</div><div class="nbody"><b>Text + call (216) 555-0188 now</b><div class="mute">He is most reachable in the hours after an ED discharge.</div><span class="src">Why: 2 independent sources agree</span>
+        <div class="dismissbox" hidden><select aria-label="Dismiss reason"><option>Already done</option><option>Not clinically relevant</option><option>Data is wrong</option><option>Member declined</option><option>Will do later</option></select><button class="btn xs" data-act="confirm-dismiss">Confirm</button></div></div>
+        <div class="nbtns"><button class="btn p sm" data-act="accept">Start</button><button class="btn sm ghost" data-act="dismiss">Dismiss</button></div></div><div class="nba" data-i="1"><div class="num">2</div><div class="nbody"><b>Controller-inhaler conversation</b><div class="mute">Why did it stop: cost, understanding, side effects? Coordinate a refill with the PCP.</div><span class="src">Why: AMR 0.25</span>
+        <div class="dismissbox" hidden><select aria-label="Dismiss reason"><option>Already done</option><option>Not clinically relevant</option><option>Data is wrong</option><option>Member declined</option><option>Will do later</option></select><button class="btn xs" data-act="confirm-dismiss">Confirm</button></div></div>
+        <div class="nbtns"><button class="btn  sm" data-act="accept">Accept</button><button class="btn sm ghost" data-act="dismiss">Dismiss</button></div></div><div class="nba" data-i="2"><div class="num">3</div><div class="nbody"><b>Same-week PCP/asthma visit + ride</b><div class="mute">Medicaid non-emergency transport.</div><span class="src">Why: No PCP visit in 14 mo</span>
+        <div class="dismissbox" hidden><select aria-label="Dismiss reason"><option>Already done</option><option>Not clinically relevant</option><option>Data is wrong</option><option>Member declined</option><option>Will do later</option></select><button class="btn xs" data-act="confirm-dismiss">Confirm</button></div></div>
+        <div class="nbtns"><button class="btn  sm" data-act="accept">Accept</button><button class="btn sm ghost" data-act="dismiss">Dismiss</button></div></div><div class="nba" data-i="3"><div class="num">4</div><div class="nbody"><b>Complete his first HRA on the call</b><div class="mute">Housing, food, transport, phone access.</div><span class="src">Why: Missing</span>
+        <div class="dismissbox" hidden><select aria-label="Dismiss reason"><option>Already done</option><option>Not clinically relevant</option><option>Data is wrong</option><option>Member declined</option><option>Will do later</option></select><button class="btn xs" data-act="confirm-dismiss">Confirm</button></div></div>
+        <div class="nbtns"><button class="btn  sm" data-act="accept">Accept</button><button class="btn sm ghost" data-act="dismiss">Dismiss</button></div></div>
+      <div class="row"><a class="btn p" href="#o-darnell">Open outreach &amp; notes →</a></div></div>
+    <div class="card"><div class="cardhead"><h3>Reach Darnell</h3><span class="mute sm">numbers ranked by last successful use</span></div>
+      <div class="contact"><b class="">(216) 555-0188</b><span class="cmeta"><span class="">Mobile · seen 27 Oct + 9 Nov</span><br><span class="mute">Pharmacy profile + ED registration agree</span></span><span class="chip c-green" >High</span></div><div class="contact"><b class="strike">(216) 555-0163</b><span class="cmeta"><span class="strike">Prepaid · on file</span><br><span class="mute">Not in service ×5</span></span><span class="chip c-red" >Do not use</span></div>
+      <div class="sm"><b>Best time:</b> Now: within 6 h of ED discharge · <b>Channel:</b> SMS, then call<br><b>Caregiver:</b> <span class="mute">Sister (new address); ask permission to list</span></div></div>
+    <div class="card"><div class="cardhead"><h3>Data freshness</h3><span class="mute sm">as-of per source</span></div>
+      <div class="fresh"><div class="fr"><span class="dot d-green"></span><b>ADT alerts</b><span class="mute">Today 03:52</span></div><div class="fr"><span class="dot d-red"></span><b>Claims</b><span class="mute">2 of 5 ED visits</span></div><div class="fr"><span class="dot d-green"></span><b>Pharmacy</b><span class="mute">27 Oct</span></div><div class="fr"><span class="dot d-red"></span><b>SDOH / HRA</b><span class="mute">Never completed</span></div><div class="fr"><span class="dot d-gray"></span><b>Labs</b><span class="mute">None in 12 mo</span></div><div class="fr"><span class="dot d-red"></span><b>Contact</b><span class="mute">No connect yet</span></div><div class="fr"><span class="dot d-green"></span><b>Eligibility</b><span class="mute">Active</span></div><div class="fr"><span class="dot d-amber"></span><b>Care gaps</b><span class="mute">Monthly</span></div></div></div>
+  </div></div>
+  <div class="fold below">Below the fold: history and plan</div>
+  <div class="g3">
+    <div class="card"><h3>Care plan</h3><div class="cp"><b>Goals</b><ul><li>No ED visit in 30 days</li><li>Controller inhaler daily</li></ul><b>Barriers</b><ul><li>Dead phone number</li><li>No PCP relationship</li></ul><b>Interventions</b><ul><li>SMS to new number</li><li>Controller refill</li><li>PCP visit + transport</li></ul></div></div>
+    <div class="card"><h3>Timeline · all sources</h3><ul class="tl"><li><span class="mute">9 Nov 03:40</span><span class="dot d-red"></span><span>ED discharge (wheezing) · new phone at registration</span></li><li><span class="mute">30 Oct</span><span class="dot d-gray"></span><span>7th failed call</span></li><li><span class="mute">27 Oct</span><span class="dot d-amber"></span><span>Rescue inhaler fill · pharmacy phone updated</span></li><li><span class="mute">24 Oct</span><span class="dot d-red"></span><span>ED visit (duplicate record merged)</span></li><li><span class="mute">12 Oct</span><span class="dot d-gray"></span><span>Letter returned undeliverable</span></li><li><span class="mute">3 Oct</span><span class="dot d-red"></span><span>ED visit</span></li><li><span class="mute">9 Sep</span><span class="dot d-red"></span><span>ED visit</span></li><li><span class="mute">14 Jun</span><span class="dot d-amber"></span><span>Last controller inhaler fill</span></li></ul></div>
+    <div class="card"><h3>Risk, social needs & care gaps</h3><div><b>Very high · ED utilization 0.82</b><div class="mute">Drivers: 4+ ED visits / 90 d · no PCP 14 mo · controller gap</div></div>
+      <div class="sd"><span class="dot d-red"></span>No screen ever completed <span class="src">—</span></div><div class="sd"><span class="dot d-amber"></span>Address changed (Oct) <span class="src">ED registration</span></div>
+      <div class="sd"><b>HEDIS / Stars gaps:</b> Asthma Medication Ratio 0.25 (target ≥ 0.5)</div></div>
+  </div></section>
+<section id="m-eleanor" class="screen">
+  <div class="topbar"><div class="tt"><h1>Member 360</h1><span class="sub">#4 in queue · Complex CM · D-SNP</span></div>
+  <div class="legend"><span><span class="dot d-green"></span>fresh</span><span><span class="dot d-amber"></span>aging</span><span><span class="dot d-red"></span>stale / missing</span><span class="ai">AI</span><span>needs your confirmation</span></div></div>
+  <div class="mhead"><div class="avatar">EW</div>
+    <div class="mid"><div class="nm">Eleanor Whitfield <span class="mute">82 F · EVG-200955 · Dual-eligible D-SNP</span></div>
+    <div class="mute">Alzheimer's (moderate) · COPD · CKD 3b · PCP Dr. R. Feldman · Dayton, OH · Language: <b class="ink">English</b></div></div>
+    <div class="clocks"><div class="clock c-red"><b>Home-health auth</b><span>Pended 12 days</span></div><div class="clock c-amber"><b>D-SNP annual HRA</b><span>Overdue since Sep</span></div><div class="clock c-green"><b>PCP visit</b><span>3 Dec</span></div></div></div>
+  <div class="fold">Above the fold: why now · what next · what disagrees</div>
+  <div class="g360"><div class="col">
+    <div class="card aic"><div class="cardhead"><h3><span class="ai">AI</span> Why now: 30-second brief</h3><span class="mute sm">Each line cites its source · generated 8:00 am</span></div>
+      <ol class="brief"><li>ED visit 30 Oct after a fall at home; no fracture. <span class="src">ADT</span></li><li>Lorazepam 0.5 mg filled 31 Oct at a second pharmacy: Beers-list drug, fall risk in dementia. <span class="src">PBM</span></li><li>Home-health aide + PT request pended 12 days: 'awaiting clinical notes'. <span class="src">UM</span></li><li>Daughter Linda (authorized rep) on 31 Oct: 'exhausted, can't leave mom alone at night'. <span class="src">CM note</span></li><li>HRA says caregiver available full time: 14 months old. <span class="src">HRA</span></li></ol>
+      <div class="mute sm">Summary is grounded only in the records listed. Open a source chip to see the raw record.</div></div>
+    <div class="card"><div class="cardhead"><h3>Medication list &amp; caregiver: sources disagree</h3><span class="chip c-violet" >Nurse resolves</span></div>
+      <table class="conf"><thead><tr><th>Field</th><th>CM record · Mar</th><th>Pharmacy fills</th><th>Other</th><th>Status</th></tr></thead><tbody><tr class="crow bad" data-i="0">
+    <td><b>Active meds</b></td><td>11</td><td>14 (3 prescribers, 2 pharmacies)</td><td>—</td>
+    <td class="cstat"><span class="chip c-red" >Reconcile</span><div class="cbtns"><button class="btn xs" data-resolve="CM record · Mar">Use CM record</button><button class="btn xs" data-resolve="Pharmacy fills">Use Pharmacy fills</button><button class="btn xs" data-resolve="member">Ask member</button></div></td></tr><tr class="crow bad" data-i="1">
+    <td><b>Lorazepam</b></td><td>—</td><td>Filled 31 Oct</td><td>ED Rx 30 Oct</td>
+    <td class="cstat"><span class="chip c-red" >Beers drug</span><div class="cbtns"><button class="btn xs" data-resolve="CM record · Mar">Use CM record</button><button class="btn xs" data-resolve="Pharmacy fills">Use Pharmacy fills</button><button class="btn xs" data-resolve="member">Ask member</button></div></td></tr><tr class="crow warn" data-i="2">
+    <td><b>Caregiver</b></td><td>—</td><td>—</td><td>HRA 'full time' vs note '2 jobs'</td>
+    <td class="cstat"><span class="chip c-amber" >Stale</span><div class="cbtns"><button class="btn xs" data-resolve="CM record · Mar">Use CM record</button><button class="btn xs" data-resolve="Pharmacy fills">Use Pharmacy fills</button><button class="btn xs" data-resolve="member">Ask member</button></div></td></tr></tbody></table>
+      <div class="mute sm resolved-count"></div></div>
+  </div><div class="col">
+    <div class="card"><div class="cardhead"><h3>Next best actions</h3><span class="ai">AI-suggested</span></div>
+      <div class="nba" data-i="0"><div class="num">1</div><div class="nbody"><b>Call Linda after 6 pm, not the landline</b><div class="mute">Eleanor cannot manage calls.</div><span class="src">Why: Authorized-rep form</span>
+        <div class="dismissbox" hidden><select aria-label="Dismiss reason"><option>Already done</option><option>Not clinically relevant</option><option>Data is wrong</option><option>Member declined</option><option>Will do later</option></select><button class="btn xs" data-act="confirm-dismiss">Confirm</button></div></div>
+        <div class="nbtns"><button class="btn p sm" data-act="accept">Start</button><button class="btn sm ghost" data-act="dismiss">Dismiss</button></div></div><div class="nba" data-i="1"><div class="num">2</div><div class="nbody"><b>Escalate the pended auth</b><div class="mute">Request the missing notes from Dr. Feldman's office.</div><span class="src">Why: UM status P2</span>
+        <div class="dismissbox" hidden><select aria-label="Dismiss reason"><option>Already done</option><option>Not clinically relevant</option><option>Data is wrong</option><option>Member declined</option><option>Will do later</option></select><button class="btn xs" data-act="confirm-dismiss">Confirm</button></div></div>
+        <div class="nbtns"><button class="btn  sm" data-act="accept">Accept</button><button class="btn sm ghost" data-act="dismiss">Dismiss</button></div></div><div class="nba" data-i="2"><div class="num">3</div><div class="nbody"><b>Flag lorazepam to PCP / pharmacist</b><div class="mute">Beers criteria; fall on 30 Oct.</div><span class="src">Why: PBM + ADT</span>
+        <div class="dismissbox" hidden><select aria-label="Dismiss reason"><option>Already done</option><option>Not clinically relevant</option><option>Data is wrong</option><option>Member declined</option><option>Will do later</option></select><button class="btn xs" data-act="confirm-dismiss">Confirm</button></div></div>
+        <div class="nbtns"><button class="btn  sm" data-act="accept">Accept</button><button class="btn sm ghost" data-act="dismiss">Dismiss</button></div></div><div class="nba" data-i="3"><div class="num">4</div><div class="nbody"><b>Caregiver-strain screen + respite</b><div class="mute">Medicaid waiver respite options.</div><span class="src">Why: Free-text note</span>
+        <div class="dismissbox" hidden><select aria-label="Dismiss reason"><option>Already done</option><option>Not clinically relevant</option><option>Data is wrong</option><option>Member declined</option><option>Will do later</option></select><button class="btn xs" data-act="confirm-dismiss">Confirm</button></div></div>
+        <div class="nbtns"><button class="btn  sm" data-act="accept">Accept</button><button class="btn sm ghost" data-act="dismiss">Dismiss</button></div></div>
+      <div class="row"><a class="btn p" href="#o-eleanor">Open outreach &amp; notes →</a></div></div>
+    <div class="card"><div class="cardhead"><h3>Reach Eleanor</h3><span class="mute sm">numbers ranked by last successful use</span></div>
+      <div class="contact"><b class="">(937) 555-0195</b><span class="cmeta"><span class="">Linda (daughter, authorized rep)</span><br><span class="mute">Connected 31 Oct 18:40</span></span><span class="chip c-green" >High</span></div><div class="contact"><b class="strike">(937) 555-0172</b><span class="cmeta"><span class="strike">Member's landline</span><br><span class="mute">Member confused on 12 Sep call</span></span><span class="chip c-red" >Not for clinical calls</span></div>
+      <div class="sm"><b>Best time:</b> After 6 pm (daughter works two jobs) · <b>Channel:</b> Phone (caregiver)<br><b>Caregiver:</b> <span class="mute">Linda Whitfield, authorized representative</span></div></div>
+    <div class="card"><div class="cardhead"><h3>Data freshness</h3><span class="mute sm">as-of per source</span></div>
+      <div class="fresh"><div class="fr"><span class="dot d-green"></span><b>ADT alerts</b><span class="mute">30 Oct</span></div><div class="fr"><span class="dot d-green"></span><b>Pharmacy</b><span class="mute">31 Oct</span></div><div class="fr"><span class="dot d-amber"></span><b>Prior auth</b><span class="mute">Pended 12 d</span></div><div class="fr"><span class="dot d-red"></span><b>SDOH / HRA</b><span class="mute">Sep 2025 · 14 mo</span></div><div class="fr"><span class="dot d-red"></span><b>Claims</b><span class="mute">Thru 30 Sep</span></div><div class="fr"><span class="dot d-green"></span><b>Labs</b><span class="mute">Aug</span></div><div class="fr"><span class="dot d-green"></span><b>Eligibility</b><span class="mute">Dual active</span></div><div class="fr"><span class="dot d-amber"></span><b>CM record</b><span class="mute">Mar</span></div></div></div>
+  </div></div>
+  <div class="fold below">Below the fold: history and plan</div>
+  <div class="g3">
+    <div class="card"><h3>Care plan</h3><div class="cp"><b>Goals</b><ul><li>No falls</li><li>Safe at home; caregiver supported</li></ul><b>Barriers</b><ul><li>Dementia; landline only</li><li>Auth stuck; new sedative</li></ul><b>Interventions</b><ul><li>Escalate auth</li><li>PCP med review</li><li>Respite referral</li></ul></div></div>
+    <div class="card"><h3>Timeline · all sources</h3><ul class="tl"><li><span class="mute">9 Nov</span><span class="dot d-red"></span><span>Auth pended 12 days</span></li><li><span class="mute">31 Oct 18:40</span><span class="dot d-amber"></span><span>Call with daughter: strain noted</span></li><li><span class="mute">31 Oct</span><span class="dot d-red"></span><span>Lorazepam filled (2nd pharmacy)</span></li><li><span class="mute">30 Oct 16:20</span><span class="dot d-red"></span><span>ED visit: fall</span></li><li><span class="mute">28 Oct</span><span class="dot d-amber"></span><span>Home-health request pended</span></li><li><span class="mute">2 Sep</span><span class="dot d-gray"></span><span>Geriatrics visit</span></li></ul></div>
+    <div class="card"><h3>Risk, social needs & care gaps</h3><div><b>High · falls / nursing-home entry</b><div class="mute">Drivers: Fall · dementia · new benzodiazepine · caregiver strain</div></div>
+      <div class="sd"><span class="dot d-amber"></span>Caregiver strain (free text) <span class="src">31 Oct</span></div><div class="sd"><span class="dot d-red"></span>HRA stale <span class="src">Sep 2025</span></div>
+      <div class="sd"><b>HEDIS / Stars gaps:</b> COA medication review · Annual D-SNP HRA overdue</div></div>
+  </div></section>
+<section id="m-rosa" class="screen">
+  <div class="topbar"><div class="tt"><h1>Member 360</h1><span class="sub">#5 in queue · Rising-risk diabetes</span></div>
+  <div class="legend"><span><span class="dot d-green"></span>fresh</span><span><span class="dot d-amber"></span>aging</span><span><span class="dot d-red"></span>stale / missing</span><span class="ai">AI</span><span>needs your confirmation</span></div></div>
+  <div class="mhead"><div class="avatar">RD</div>
+    <div class="mid"><div class="nm">Rosa Delgado <span class="mute">58 F · EVG-200417 · Medicaid MCO</span></div>
+    <div class="mute">Type 2 diabetes on insulin · hypertension · PCP Dr. P. Shah · Toledo, OH · Language: <b class="ink">Spanish (preferred)</b></div></div>
+    <div class="clocks"><div class="clock c-amber"><b>Rising risk</b><span>0.42 → 0.71</span></div><div class="clock c-amber"><b>HEDIS glycemic status</b><span>A1c &gt; 9: open</span></div><div class="clock c-green"><b>No event deadline</b><span>Plan this week</span></div></div></div>
+  <div class="fold">Above the fold: why now · what next · what disagrees</div>
+  <div class="g360"><div class="col">
+    <div class="card aic"><div class="cardhead"><h3><span class="ai">AI</span> Why now: 30-second brief</h3><span class="mute sm">Each line cites its source · generated 8:00 am</span></div>
+      <ol class="brief"><li>Insulin glargine last filled 28 Aug (30 days): ~43-day gap. <span class="src">PBM</span></li><li>HbA1c 7.6% (Mar) → 9.4% (Oct). <span class="src">Labs</span></li><li>No metformin fills in pharmacy claims since June: she may buy it at a $4 cash program. Ask before flagging. <span class="src">PBM · low confidence</span></li><li>May note: lows at work on night shift; afraid to take insulin before her shift. <span class="src">CM note</span></li><li>Glucose-monitor request denied in May. <span class="src">UM</span></li></ol>
+      <div class="mute sm">Summary is grounded only in the records listed. Open a source chip to see the raw record.</div></div>
+    <div class="card"><div class="cardhead"><h3>Language &amp; adherence: sources disagree</h3><span class="chip c-violet" >Nurse resolves</span></div>
+      <table class="conf"><thead><tr><th>Field</th><th>Enrollment</th><th>Pharmacy claims</th><th>HRA / notes</th><th>Status</th></tr></thead><tbody><tr class="crow bad" data-i="0">
+    <td><b>Language</b></td><td>English</td><td>—</td><td>Spanish (HRA, May call)</td>
+    <td class="cstat"><span class="chip c-red" >Conflict</span><div class="cbtns"><button class="btn xs" data-resolve="Enrollment">Use Enrollment</button><button class="btn xs" data-resolve="Pharmacy claims">Use Pharmacy claims</button><button class="btn xs" data-resolve="member">Ask member</button></div></td></tr><tr class="crow " data-i="1">
+    <td><b>Metformin</b></td><td>—</td><td>No fills since Jun</td><td>'Buys at Walmart'?</td>
+    <td class="cstat"><span class="chip c-violet" >Low confidence</span><div class="cbtns"><button class="btn xs" data-resolve="Enrollment">Use Enrollment</button><button class="btn xs" data-resolve="Pharmacy claims">Use Pharmacy claims</button><button class="btn xs" data-resolve="member">Ask member</button></div></td></tr><tr class="crow warn" data-i="2">
+    <td><b>Insulin</b></td><td>—</td><td>Last fill 28 Aug</td><td>Fear of night lows</td>
+    <td class="cstat"><span class="chip c-amber" >Real gap</span><div class="cbtns"><button class="btn xs" data-resolve="Enrollment">Use Enrollment</button><button class="btn xs" data-resolve="Pharmacy claims">Use Pharmacy claims</button><button class="btn xs" data-resolve="member">Ask member</button></div></td></tr></tbody></table>
+      <div class="mute sm resolved-count"></div></div>
+  </div><div class="col">
+    <div class="card"><div class="cardhead"><h3>Next best actions</h3><span class="ai">AI-suggested</span></div>
+      <div class="nba" data-i="0"><div class="num">1</div><div class="nbody"><b>Text in Spanish, call 2–3 pm</b><div class="mute">10–11 am calls failed: she sleeps after night shift.</div><span class="src">Why: Contact history</span>
+        <div class="dismissbox" hidden><select aria-label="Dismiss reason"><option>Already done</option><option>Not clinically relevant</option><option>Data is wrong</option><option>Member declined</option><option>Will do later</option></select><button class="btn xs" data-act="confirm-dismiss">Confirm</button></div></div>
+        <div class="nbtns"><button class="btn p sm" data-act="accept">Start</button><button class="btn sm ghost" data-act="dismiss">Dismiss</button></div></div><div class="nba" data-i="1"><div class="num">2</div><div class="nbody"><b>Explore fear of lows</b><div class="mute">Ask the PCP about dose timing and a monitor appeal.</div><span class="src">Why: CM note + UM</span>
+        <div class="dismissbox" hidden><select aria-label="Dismiss reason"><option>Already done</option><option>Not clinically relevant</option><option>Data is wrong</option><option>Member declined</option><option>Will do later</option></select><button class="btn xs" data-act="confirm-dismiss">Confirm</button></div></div>
+        <div class="nbtns"><button class="btn  sm" data-act="accept">Accept</button><button class="btn sm ghost" data-act="dismiss">Dismiss</button></div></div><div class="nba" data-i="2"><div class="num">3</div><div class="nbody"><b>90-day insulin fill + home delivery</b><div class="mute">Pharmacy team.</div><span class="src">Why: PBM gap</span>
+        <div class="dismissbox" hidden><select aria-label="Dismiss reason"><option>Already done</option><option>Not clinically relevant</option><option>Data is wrong</option><option>Member declined</option><option>Will do later</option></select><button class="btn xs" data-act="confirm-dismiss">Confirm</button></div></div>
+        <div class="nbtns"><button class="btn  sm" data-act="accept">Accept</button><button class="btn sm ghost" data-act="dismiss">Dismiss</button></div></div><div class="nba" data-i="3"><div class="num">4</div><div class="nbody"><b>Fix language on file</b><div class="mute">Enrollment says English; she prefers Spanish.</div><span class="src">Why: HRA + calls</span>
+        <div class="dismissbox" hidden><select aria-label="Dismiss reason"><option>Already done</option><option>Not clinically relevant</option><option>Data is wrong</option><option>Member declined</option><option>Will do later</option></select><button class="btn xs" data-act="confirm-dismiss">Confirm</button></div></div>
+        <div class="nbtns"><button class="btn  sm" data-act="accept">Accept</button><button class="btn sm ghost" data-act="dismiss">Dismiss</button></div></div>
+      <div class="row"><a class="btn p" href="#o-rosa">Open outreach &amp; notes →</a></div></div>
+    <div class="card"><div class="cardhead"><h3>Reach Rosa</h3><span class="mute sm">numbers ranked by last successful use</span></div>
+      <div class="contact"><b class="">(419) 555-0127</b><span class="cmeta"><span class="">Mobile · SMS opted in</span><br><span class="mute">Inbound connect 14 May 2:40 pm</span></span><span class="chip c-green" >High</span></div>
+      <div class="sm"><b>Best time:</b> 2–4 pm (works nights) · <b>Channel:</b> SMS, then call · Spanish<br><b>Caregiver:</b> <span class="mute">Daughter Ana sometimes interprets</span></div></div>
+    <div class="card"><div class="cardhead"><h3>Data freshness</h3><span class="mute sm">as-of per source</span></div>
+      <div class="fresh"><div class="fr"><span class="dot d-green"></span><b>Pharmacy</b><span class="mute">2 Oct</span></div><div class="fr"><span class="dot d-green"></span><b>Labs</b><span class="mute">14 Oct</span></div><div class="fr"><span class="dot d-red"></span><b>Claims</b><span class="mute">A1c claim pending</span></div><div class="fr"><span class="dot d-amber"></span><b>SDOH / HRA</b><span class="mute">May · 6 mo</span></div><div class="fr"><span class="dot d-gray"></span><b>ADT</b><span class="mute">No events</span></div><div class="fr"><span class="dot d-amber"></span><b>Contact</b><span class="mute">Last connect May</span></div><div class="fr"><span class="dot d-green"></span><b>Risk model</b><span class="mute">1 Nov</span></div><div class="fr"><span class="dot d-amber"></span><b>CM notes</b><span class="mute">May</span></div></div></div>
+  </div></div>
+  <div class="fold below">Below the fold: history and plan</div>
+  <div class="g3">
+    <div class="card"><h3>Care plan</h3><div class="cp"><b>Goals</b><ul><li>A1c below 8% in 6 months</li><li>No severe lows at work</li></ul><b>Barriers</b><ul><li>Fear of night-shift lows</li><li>Language; works nights</li></ul><b>Interventions</b><ul><li>Spanish call 2–3 pm</li><li>PCP dose-timing review</li><li>90-day fill + delivery</li></ul></div></div>
+    <div class="card"><h3>Timeline · all sources</h3><ul class="tl"><li><span class="mute">1 Nov</span><span class="dot d-amber"></span><span>Rising-risk 0.42 → 0.71</span></li><li><span class="mute">14 Oct</span><span class="dot d-red"></span><span>HbA1c 9.4%</span></li><li><span class="mute">27 Sep</span><span class="dot d-amber"></span><span>Insulin supply ran out</span></li><li><span class="mute">28 Aug</span><span class="dot d-gray"></span><span>Last insulin fill</span></li><li><span class="mute">20 May</span><span class="dot d-gray"></span><span>Glucose monitor denied</span></li><li><span class="mute">14 May</span><span class="dot d-green"></span><span>Spanish call: night-shift lows</span></li></ul></div>
+    <div class="card"><h3>Risk, social needs & care gaps</h3><div><b>Rising · 12-month cost risk 0.71</b><div class="mute">Drivers: A1c rise · insulin gap · food insecurity</div></div>
+      <div class="sd"><span class="dot d-amber"></span>Food insecure 'sometimes' <span class="src">May 2026</span></div><div class="sd"><span class="dot d-amber"></span>Night-shift worker <span class="src">May 2026</span></div>
+      <div class="sd"><b>HEDIS / Stars gaps:</b> Glycemic status &gt; 9% · Diabetic eye exam</div></div>
+  </div></section>
+  <section id="o-harold" class="screen" data-key="harold">
+  <div class="topbar"><div class="tt"><h1>Outreach &amp; documentation</h1><span class="sub">Harold Brennan · EVG-100231 · Transitions of Care</span></div>
+  <div class="legend"><span><span class="dot d-green"></span>fresh</span><span><span class="dot d-amber"></span>aging</span><span><span class="dot d-red"></span>stale / missing</span><span class="ai">AI</span><span>needs your confirmation</span></div></div>
+  <div class="tabs"><a href="#o-harold" class="on">Harold Brennan</a><a href="#o-tasha" class="">Tasha Morgan</a><a href="#o-darnell" class="">Darnell Price</a><a href="#o-eleanor" class="">Eleanor Whitfield</a><a href="#o-rosa" class="">Rosa Delgado</a></div>
+  <div class="gout"><div class="col">
+    <div class="card"><h3>Who &amp; how</h3>
+      <div class="contact"><b class="">(614) 555-0142</b><span class="cmeta mute">Mobile · member</span><span class="chip c-green" >Use</span></div>
+      <div class="chips"><span class="chip c-blue" >9–11 am (3 of 3 past connects)</span> <span class="chip c-gray" >English</span></div>
+      <div class="row wrap"><button class="btn p" data-act="call">Call</button><button class="btn" data-act="sms-focus">SMS</button><button class="btn" data-act="video">Video</button><button class="btn" data-act="interp">Interpreter</button></div>
+      <div class="outcomes" role="group" aria-label="Call outcome"><span class="mute sm">Log outcome:</span><button class="btn xs" data-outcome="Connected">Connected</button><button class="btn xs" data-outcome="Voicemail">Voicemail</button><button class="btn xs" data-outcome="Wrong number">Wrong number</button><button class="btn xs" data-outcome="No answer">No answer</button><button class="btn xs" data-outcome="Call back">Call back</button></div>
+      <ul class="alog"></ul></div>
+    
+    <div class="card aic"><h3><span class="ai">AI</span> Pre-call agenda</h3><label class="chk"><input type="checkbox"> <span>Check symptoms: breathlessness, swelling, weight since discharge</span></label><label class="chk"><input type="checkbox"> <span>Line-by-line med review: confirm lisinopril is stopped</span></label><label class="chk"><input type="checkbox"> <span>Explain Entresto delay: do not start until 36 h after last lisinopril</span></label><label class="chk"><input type="checkbox"> <span>Teach-back: daily weight; call if +1 kg/day</span></label><label class="chk"><input type="checkbox"> <span>Book cardiology/PCP by Sat 14 Nov; offer ride</span></label><label class="chk"><input type="checkbox"> <span>Ask how Joan is coping with the changes</span></label></div>
+  </div><div class="col">
+    <div class="card"><div class="cardhead"><h3>Your quick notes during the call</h3><span class="mute sm">type or dictate · ambient listening comes in v2</span></div>
+      <textarea class="notes" rows="5">Says he 'took both blood pressure pills this morning': lisinopril AND spironolactone. Entresto not picked up; pharmacy said 'needs approval'. Weight 93.1 kg (discharge 92.4). Mild ankle swelling. Joan fills pillbox, confused by the changes. Agrees to cardiology Thu.</textarea></div>
+    <div class="card aic"><div class="cardhead"><h3><span class="ai">AI draft</span> Structured note + assessment pre-fill</h3><span class="mute sm">every field tagged with its source</span></div>
+      <div class="field " data-i="0"><span class="lab">Reason for contact</span><span class="val">Post-discharge TOC call, HF admission 4–7 Nov</span><span class="tagc"><span class="chip c-blue" >From record</span></span></div><div class="field " data-i="1"><span class="lab">Symptoms</span><span class="val">Mild ankle edema; no rest dyspnea; weight +0.7 kg vs discharge</span><span class="tagc"><span class="chip c-green" >From call</span></span></div><div class="field " data-i="2"><span class="lab">Medication reconciliation</span><span class="val">Lisinopril still taken: told to STOP. Entresto not started (PA pending). Furosemide 40 mg confirmed.</span><span class="tagc"><span class="chip c-green" >From call</span></span></div><div class="field " data-i="3"><span class="lab">Barrier</span><span class="val">Spouse fills pillbox; confused by 6 changes</span><span class="tagc"><span class="chip c-green" >From call</span></span></div><div class="field " data-i="4"><span class="lab">Follow-up</span><span class="val">Cardiology Thu 12 Nov 10:30; ride booked</span><span class="tagc"><span class="chip c-green" >From call</span></span></div><div class="field " data-i="5"><span class="lab">Monitoring</span><span class="val">Home-health K+ and weight on 12 Nov</span><span class="tagc"><span class="chip c-blue" >From record</span></span></div><div class="field needs" data-i="6"><span class="lab">SDOH</span><span class="val">No new needs reported</span><span class="tagc"><span class="chip c-violet" >Needs your input</span><button class="btn xs" data-act="confirm-field">Confirm</button></span></div><div class="field needs" data-i="7"><span class="lab">Fall / safety screen</span><span class="val">Not yet assessed</span><span class="tagc"><span class="chip c-violet" >Needs your input</span><button class="btn xs" data-act="confirm-field">Confirm</button></span></div>
+      <div class="row"><button class="btn signbtn" data-act="sign" disabled>Sign note (2 need your input)</button><span class="signed" hidden></span></div>
+      <div class="mute sm">40-field assessment → 22 pre-filled from the record, 12 from this call, 6 need nurse judgement. Nothing is signed without review.</div></div>
+  </div><div class="col">
+    <div class="card"><h3>Tasks created from this call</h3><label class="chk"><input type="checkbox"> <span><b>Submit Entresto prior auth</b><br><span class="mute">Pharmacy team · today</span></span></label><label class="chk"><input type="checkbox"> <span><b>Tell cardiology: ACE-I overlap risk, K+ 5.1</b><br><span class="mute">Dr. S. Novak's office</span></span></label><label class="chk"><input type="checkbox"> <span><b>Home-health RN: K+ and weight 12 Nov</b><br><span class="mute">Order request</span></span></label><label class="chk"><input type="checkbox"> <span><b>Follow-up call</b><br><span class="mute">Thu 12 Nov, 9:30 am</span></span></label>
+      <div class="mute sm">Tasks route to pharmacy, UM and social-work queues. You approve each one.</div></div>
+    <div class="card"><h3>Clocks</h3><div class="clk" data-i="0"><span class="chip c-amber" >TOC contact (2 business days)</span> <span class="mute">Due Tue 10 Nov · 1 day left</span></div><div class="clk" data-i="1"><span class="chip c-amber" >7-day follow-up visit</span> <span class="mute">Due Sat 14 Nov · not booked</span></div><div class="clk" data-i="2"><span class="chip c-green" >HEDIS TRC med-rec</span> <span class="mute">Due 7 Dec</span></div></div>
+    <div class="card guard"><h3>Guardrails</h3><ul class="gl"><li>AI drafts; the nurse confirms and signs.</li><li>Every AI line cites a source.</li><li>No AI clinical risk assessment (e.g., suicide risk).</li><li>42 CFR Part 2 data shown only with consent.</li></ul></div>
+  </div></div></section>
+<section id="o-tasha" class="screen" data-key="tasha">
+  <div class="topbar"><div class="tt"><h1>Outreach &amp; documentation</h1><span class="sub">Tasha Morgan · EVG-300588 · Behavioral Health CM</span></div>
+  <div class="legend"><span><span class="dot d-green"></span>fresh</span><span><span class="dot d-amber"></span>aging</span><span><span class="dot d-red"></span>stale / missing</span><span class="ai">AI</span><span>needs your confirmation</span></div></div>
+  <div class="tabs"><a href="#o-harold" class="">Harold Brennan</a><a href="#o-tasha" class="on">Tasha Morgan</a><a href="#o-darnell" class="">Darnell Price</a><a href="#o-eleanor" class="">Eleanor Whitfield</a><a href="#o-rosa" class="">Rosa Delgado</a></div>
+  <div class="gout"><div class="col">
+    <div class="card"><h3>Who &amp; how</h3>
+      <div class="contact"><b class="">(614) 555-0119</b><span class="cmeta mute">Mobile (prepaid) · SMS</span><span class="chip c-green" >Use</span></div>
+      <div class="chips"><span class="chip c-blue" >Midday; text first</span> <span class="chip c-gray" >English</span></div>
+      <div class="row wrap"><button class="btn p" data-act="call">Call</button><button class="btn" data-act="sms-focus">SMS</button><button class="btn" data-act="video">Video</button><button class="btn" data-act="interp">Interpreter</button></div>
+      <div class="outcomes" role="group" aria-label="Call outcome"><span class="mute sm">Log outcome:</span><button class="btn xs" data-outcome="Connected">Connected</button><button class="btn xs" data-outcome="Voicemail">Voicemail</button><button class="btn xs" data-outcome="Wrong number">Wrong number</button><button class="btn xs" data-outcome="No answer">No answer</button><button class="btn xs" data-outcome="Call back">Call back</button></div>
+      <ul class="alog"></ul></div>
+    <div class="card aic smscard"><h3><span class="ai">AI draft</span> Message: edit before sending</h3><textarea class="smsbox" rows="5">Hi Tasha, this is Maria, your nurse care manager at Evergreen Health. Checking in after your hospital stay. I can set up a video visit with your counselor TODAY. Reply YES and a good time. Reply STOP to opt out.</textarea>
+      <div class="row"><button class="btn p" data-act="send-sms" data-reply="yes after 12 pls">Send (you)</button><span class="mute sm">AI never sends on its own. Opt-out included (TCPA).</span></div><div class="thread"></div></div>
+    <div class="card aic"><h3><span class="ai">AI</span> Pre-call agenda</h3><label class="chk"><input type="checkbox"> <span>Warm check-in; confirm she can talk privately</span></label><label class="chk"><input type="checkbox"> <span>Nurse-led safety screen (C-SSRS)</span></label><label class="chk"><input type="checkbox"> <span>Offer same-day telehealth with the BH clinic: warm transfer</span></label><label class="chk"><input type="checkbox"> <span>Meds: any side effects from sertraline or prazosin?</span></label><label class="chk"><input type="checkbox"> <span>Housing: shelter stay, son, needs; introduce social worker</span></label><label class="chk"><input type="checkbox"> <span>Confirm best number and SMS consent</span></label></div>
+  </div><div class="col">
+    <div class="card"><div class="cardhead"><h3>Your quick notes during the call</h3><span class="mute sm">type or dictate · ambient listening comes in v2</span></div>
+      <textarea class="notes" rows="5">Replied to SMS 8:41; call 9:05. At shelter with son. Safety screen done: no current SI. Taking sertraline. Accepted 1 pm telehealth today with BH clinic. Needs phone minutes; agreed to social worker call.</textarea></div>
+    <div class="card aic"><div class="cardhead"><h3><span class="ai">AI draft</span> Structured note + assessment pre-fill</h3><span class="mute sm">every field tagged with its source</span></div>
+      <div class="field " data-i="0"><span class="lab">Reason for contact</span><span class="val">FUH follow-up after psych discharge 2 Nov</span><span class="tagc"><span class="chip c-blue" >From record</span></span></div><div class="field needs" data-i="1"><span class="lab">Safety screen</span><span class="val">C-SSRS done by RN: negative today</span><span class="tagc"><span class="chip c-violet" >Needs your input</span><button class="btn xs" data-act="confirm-field">Confirm</button></span></div><div class="field " data-i="2"><span class="lab">Follow-up</span><span class="val">BH telehealth today 1:00 pm (FUH)</span><span class="tagc"><span class="chip c-green" >From call</span></span></div><div class="field " data-i="3"><span class="lab">Medications</span><span class="val">Sertraline, prazosin: taking, no side effects</span><span class="tagc"><span class="chip c-green" >From call</span></span></div><div class="field " data-i="4"><span class="lab">Housing</span><span class="val">Shelter since 2 Nov with son (4)</span><span class="tagc"><span class="chip c-green" >From call</span></span></div><div class="field needs" data-i="5"><span class="lab">SDOH code</span><span class="val">Z59.01 sheltered homelessness (suggested)</span><span class="tagc"><span class="chip c-violet" >Needs your input</span><button class="btn xs" data-act="confirm-field">Confirm</button></span></div>
+      <div class="row"><button class="btn signbtn" data-act="sign" disabled>Sign note (2 need your input)</button><span class="signed" hidden></span></div>
+      <div class="mute sm">40-field assessment → 22 pre-filled from the record, 12 from this call, 6 need nurse judgement. Nothing is signed without review.</div></div>
+  </div><div class="col">
+    <div class="card"><h3>Tasks created from this call</h3><label class="chk"><input type="checkbox"> <span><b>Co-assign social worker (housing)</b><br><span class="mute">Today</span></span></label><label class="chk"><input type="checkbox"> <span><b>Lifeline / phone-minutes benefit</b><br><span class="mute">Social worker</span></span></label><label class="chk"><input type="checkbox"> <span><b>Update address to shelter</b><br><span class="mute">Eligibility team</span></span></label><label class="chk"><input type="checkbox"> <span><b>Confirm telehealth attended</b><br><span class="mute">Today 2:30 pm</span></span></label>
+      <div class="mute sm">Tasks route to pharmacy, UM and social-work queues. You approve each one.</div></div>
+    <div class="card"><h3>Clocks</h3><div class="clk" data-i="0"><span class="chip c-red" >HEDIS FUH 7-day follow-up</span> <span class="mute">Closes TODAY 9 Nov</span></div><div class="clk" data-i="1"><span class="chip c-amber" >FUH 30-day</span> <span class="mute">Due 2 Dec</span></div><div class="clk" data-i="2"><span class="chip c-green" >Discharge meds</span> <span class="mute">Filled 2 Nov</span></div></div>
+    <div class="card guard"><h3>Guardrails</h3><ul class="gl"><li>AI drafts; the nurse confirms and signs.</li><li>Every AI line cites a source.</li><li>No AI clinical risk assessment (e.g., suicide risk).</li><li>42 CFR Part 2 data shown only with consent.</li></ul></div>
+  </div></div></section>
+<section id="o-darnell" class="screen" data-key="darnell">
+  <div class="topbar"><div class="tt"><h1>Outreach &amp; documentation</h1><span class="sub">Darnell Price · EVG-300412 · Complex CM · frequent ED use</span></div>
+  <div class="legend"><span><span class="dot d-green"></span>fresh</span><span><span class="dot d-amber"></span>aging</span><span><span class="dot d-red"></span>stale / missing</span><span class="ai">AI</span><span>needs your confirmation</span></div></div>
+  <div class="tabs"><a href="#o-harold" class="">Harold Brennan</a><a href="#o-tasha" class="">Tasha Morgan</a><a href="#o-darnell" class="on">Darnell Price</a><a href="#o-eleanor" class="">Eleanor Whitfield</a><a href="#o-rosa" class="">Rosa Delgado</a></div>
+  <div class="gout"><div class="col">
+    <div class="card"><h3>Who &amp; how</h3>
+      <div class="contact"><b class="">(216) 555-0188</b><span class="cmeta mute">Mobile · seen 27 Oct + 9 Nov</span><span class="chip c-green" >Use</span></div><div class="contact"><b class="strike">(216) 555-0163</b><span class="cmeta mute">Prepaid · on file</span><span class="chip c-red" >Skip</span></div>
+      <div class="chips"><span class="chip c-blue" >Now: within 6 h of ED discharge</span> <span class="chip c-gray" >English</span></div>
+      <div class="row wrap"><button class="btn p" data-act="call">Call</button><button class="btn" data-act="sms-focus">SMS</button><button class="btn" data-act="video">Video</button><button class="btn" data-act="interp">Interpreter</button></div>
+      <div class="outcomes" role="group" aria-label="Call outcome"><span class="mute sm">Log outcome:</span><button class="btn xs" data-outcome="Connected">Connected</button><button class="btn xs" data-outcome="Voicemail">Voicemail</button><button class="btn xs" data-outcome="Wrong number">Wrong number</button><button class="btn xs" data-outcome="No answer">No answer</button><button class="btn xs" data-outcome="Call back">Call back</button></div>
+      <ul class="alog"></ul></div>
+    <div class="card aic smscard"><h3><span class="ai">AI draft</span> Message: edit before sending</h3><textarea class="smsbox" rows="5">Hi Darnell, this is Maria, a nurse with your Evergreen Health plan. Sorry you were in the ER last night. I can help get your inhaler refilled and a ride to a doctor this week. Is this a good number for you? Reply STOP to opt out.</textarea>
+      <div class="row"><button class="btn p" data-act="send-sms" data-reply="yeah this is me. call me">Send (you)</button><span class="mute sm">AI never sends on its own. Opt-out included (TCPA).</span></div><div class="thread"></div></div>
+    <div class="card aic"><h3><span class="ai">AI</span> Pre-call agenda</h3><label class="chk"><input type="checkbox"> <span>Introduce your role: we have never reached him</span></label><label class="chk"><input type="checkbox"> <span>How is breathing since the ED? Has the prednisone?</span></label><label class="chk"><input type="checkbox"> <span>Controller inhaler: what happened in June?</span></label><label class="chk"><input type="checkbox"> <span>Book a PCP/asthma visit this week + ride</span></label><label class="chk"><input type="checkbox"> <span>Confirm phone + address; consent to text</span></label><label class="chk"><input type="checkbox"> <span>First HRA (5 questions)</span></label></div>
+  </div><div class="col">
+    <div class="card"><div class="cardhead"><h3>Your quick notes during the call</h3><span class="mute sm">type or dictate · ambient listening comes in v2</span></div>
+      <textarea class="notes" rows="5">Replied to text 9:20, call 9:30. Stopped Symbicort in June: 'ran out, copay at the other pharmacy'. Lives with sister now. Old phone cut off; new number is his. Agreed to PCP visit Wed; needs a ride.</textarea></div>
+    <div class="card aic"><div class="cardhead"><h3><span class="ai">AI draft</span> Structured note + assessment pre-fill</h3><span class="mute sm">every field tagged with its source</span></div>
+      <div class="field " data-i="0"><span class="lab">Reason for contact</span><span class="val">Post-ED outreach; frequent ED use</span><span class="tagc"><span class="chip c-blue" >From record</span></span></div><div class="field " data-i="1"><span class="lab">Barrier</span><span class="val">Controller stopped Jun: pharmacy/copay confusion</span><span class="tagc"><span class="chip c-green" >From call</span></span></div><div class="field " data-i="2"><span class="lab">Plan</span><span class="val">PCP Wed 11 Nov; Symbicort refill to Discount Drug #19</span><span class="tagc"><span class="chip c-green" >From call</span></span></div><div class="field " data-i="3"><span class="lab">Contact</span><span class="val">(216) 555-0188 confirmed; SMS consent given</span><span class="tagc"><span class="chip c-green" >From call</span></span></div><div class="field needs" data-i="4"><span class="lab">Address</span><span class="val">Lives with sister: new address</span><span class="tagc"><span class="chip c-violet" >Needs your input</span><button class="btn xs" data-act="confirm-field">Confirm</button></span></div><div class="field " data-i="5"><span class="lab">HRA</span><span class="val">Transport 'sometimes a problem'; food OK</span><span class="tagc"><span class="chip c-green" >From call</span></span></div>
+      <div class="row"><button class="btn signbtn" data-act="sign" disabled>Sign note (1 need your input)</button><span class="signed" hidden></span></div>
+      <div class="mute sm">40-field assessment → 22 pre-filled from the record, 12 from this call, 6 need nurse judgement. Nothing is signed without review.</div></div>
+  </div><div class="col">
+    <div class="card"><h3>Tasks created from this call</h3><label class="chk"><input type="checkbox"> <span><b>Update phone + address</b><br><span class="mute">Eligibility team</span></span></label><label class="chk"><input type="checkbox"> <span><b>Ride for Wed PCP visit</b><br><span class="mute">Medicaid transport</span></span></label><label class="chk"><input type="checkbox"> <span><b>Symbicort refill + $0 copay check</b><br><span class="mute">Pharmacy team</span></span></label><label class="chk"><input type="checkbox"> <span><b>Follow-up text</b><br><span class="mute">Thu 12 Nov</span></span></label>
+      <div class="mute sm">Tasks route to pharmacy, UM and social-work queues. You approve each one.</div></div>
+    <div class="card"><h3>Clocks</h3><div class="clk" data-i="0"><span class="chip c-red" >ED discharge</span> <span class="mute">03:40 today · reach while reachable</span></div><div class="clk" data-i="1"><span class="chip c-amber" >Follow-up after ED</span> <span class="mute">Due 16 Nov</span></div><div class="clk" data-i="2"><span class="chip c-amber" >HEDIS AMR</span> <span class="mute">0.25 (target ≥ 0.5)</span></div></div>
+    <div class="card guard"><h3>Guardrails</h3><ul class="gl"><li>AI drafts; the nurse confirms and signs.</li><li>Every AI line cites a source.</li><li>No AI clinical risk assessment (e.g., suicide risk).</li><li>42 CFR Part 2 data shown only with consent.</li></ul></div>
+  </div></div></section>
+<section id="o-eleanor" class="screen" data-key="eleanor">
+  <div class="topbar"><div class="tt"><h1>Outreach &amp; documentation</h1><span class="sub">Eleanor Whitfield · EVG-200955 · Complex CM · D-SNP</span></div>
+  <div class="legend"><span><span class="dot d-green"></span>fresh</span><span><span class="dot d-amber"></span>aging</span><span><span class="dot d-red"></span>stale / missing</span><span class="ai">AI</span><span>needs your confirmation</span></div></div>
+  <div class="tabs"><a href="#o-harold" class="">Harold Brennan</a><a href="#o-tasha" class="">Tasha Morgan</a><a href="#o-darnell" class="">Darnell Price</a><a href="#o-eleanor" class="on">Eleanor Whitfield</a><a href="#o-rosa" class="">Rosa Delgado</a></div>
+  <div class="gout"><div class="col">
+    <div class="card"><h3>Who &amp; how</h3>
+      <div class="contact"><b class="">(937) 555-0195</b><span class="cmeta mute">Linda (daughter, authorized rep)</span><span class="chip c-green" >Use</span></div><div class="contact"><b class="strike">(937) 555-0172</b><span class="cmeta mute">Member's landline</span><span class="chip c-red" >Skip</span></div>
+      <div class="chips"><span class="chip c-blue" >After 6 pm (daughter works two jobs)</span> <span class="chip c-gray" >English</span></div>
+      <div class="row wrap"><button class="btn p" data-act="call">Call</button><button class="btn" data-act="sms-focus">SMS</button><button class="btn" data-act="video">Video</button><button class="btn" data-act="interp">Interpreter</button></div>
+      <div class="outcomes" role="group" aria-label="Call outcome"><span class="mute sm">Log outcome:</span><button class="btn xs" data-outcome="Connected">Connected</button><button class="btn xs" data-outcome="Voicemail">Voicemail</button><button class="btn xs" data-outcome="Wrong number">Wrong number</button><button class="btn xs" data-outcome="No answer">No answer</button><button class="btn xs" data-outcome="Call back">Call back</button></div>
+      <ul class="alog"></ul></div>
+    
+    <div class="card aic"><h3><span class="ai">AI</span> Pre-call agenda</h3><label class="chk"><input type="checkbox"> <span>Ask Linda how her mother is since the fall</span></label><label class="chk"><input type="checkbox"> <span>Lorazepam: how often given; any sleepiness or unsteadiness</span></label><label class="chk"><input type="checkbox"> <span>Update on the home-health request</span></label><label class="chk"><input type="checkbox"> <span>How is Linda coping? (caregiver strain)</span></label><label class="chk"><input type="checkbox"> <span>Respite options</span></label><label class="chk"><input type="checkbox"> <span>Update the annual HRA</span></label></div>
+  </div><div class="col">
+    <div class="card"><div class="cardhead"><h3>Your quick notes during the call</h3><span class="mute sm">type or dictate · ambient listening comes in v2</span></div>
+      <textarea class="notes" rows="5">Called Linda 6:20 pm. Mom given lorazepam 3 nights; 'wobbly in the mornings'. Linda working nights, sleeps 4 h. Wants home health ASAP. Open to respite 2 days/week.</textarea></div>
+    <div class="card aic"><div class="cardhead"><h3><span class="ai">AI draft</span> Structured note + assessment pre-fill</h3><span class="mute sm">every field tagged with its source</span></div>
+      <div class="field " data-i="0"><span class="lab">Reason for contact</span><span class="val">Post-fall follow-up; pended home health</span><span class="tagc"><span class="chip c-blue" >From record</span></span></div><div class="field " data-i="1"><span class="lab">Medication concern</span><span class="val">Lorazepam given 3 nights; morning unsteadiness</span><span class="tagc"><span class="chip c-green" >From call</span></span></div><div class="field " data-i="2"><span class="lab">Caregiver</span><span class="val">Strain high: works nights, ~4 h sleep</span><span class="tagc"><span class="chip c-green" >From call</span></span></div><div class="field " data-i="3"><span class="lab">Plan</span><span class="val">Escalate auth; PCP med review; respite referral</span><span class="tagc"><span class="chip c-green" >From call</span></span></div><div class="field needs" data-i="4"><span class="lab">Caregiver-strain score</span><span class="val">Zarit-4 (enter score)</span><span class="tagc"><span class="chip c-violet" >Needs your input</span><button class="btn xs" data-act="confirm-field">Confirm</button></span></div>
+      <div class="row"><button class="btn signbtn" data-act="sign" disabled>Sign note (1 need your input)</button><span class="signed" hidden></span></div>
+      <div class="mute sm">40-field assessment → 22 pre-filled from the record, 12 from this call, 6 need nurse judgement. Nothing is signed without review.</div></div>
+  </div><div class="col">
+    <div class="card"><h3>Tasks created from this call</h3><label class="chk"><input type="checkbox"> <span><b>Escalate home-health auth with UM</b><br><span class="mute">Today</span></span></label><label class="chk"><input type="checkbox"> <span><b>Request notes from Dr. Feldman</b><br><span class="mute">Fax / portal</span></span></label><label class="chk"><input type="checkbox"> <span><b>PCP + pharmacist: lorazepam review</b><br><span class="mute">Message</span></span></label><label class="chk"><input type="checkbox"> <span><b>Respite referral (waiver)</b><br><span class="mute">Social worker</span></span></label>
+      <div class="mute sm">Tasks route to pharmacy, UM and social-work queues. You approve each one.</div></div>
+    <div class="card"><h3>Clocks</h3><div class="clk" data-i="0"><span class="chip c-red" >Home-health auth</span> <span class="mute">Pended 12 days</span></div><div class="clk" data-i="1"><span class="chip c-amber" >D-SNP annual HRA</span> <span class="mute">Overdue since Sep</span></div><div class="clk" data-i="2"><span class="chip c-green" >PCP visit</span> <span class="mute">3 Dec</span></div></div>
+    <div class="card guard"><h3>Guardrails</h3><ul class="gl"><li>AI drafts; the nurse confirms and signs.</li><li>Every AI line cites a source.</li><li>No AI clinical risk assessment (e.g., suicide risk).</li><li>42 CFR Part 2 data shown only with consent.</li></ul></div>
+  </div></div></section>
+<section id="o-rosa" class="screen" data-key="rosa">
+  <div class="topbar"><div class="tt"><h1>Outreach &amp; documentation</h1><span class="sub">Rosa Delgado · EVG-200417 · Rising-risk diabetes</span></div>
+  <div class="legend"><span><span class="dot d-green"></span>fresh</span><span><span class="dot d-amber"></span>aging</span><span><span class="dot d-red"></span>stale / missing</span><span class="ai">AI</span><span>needs your confirmation</span></div></div>
+  <div class="tabs"><a href="#o-harold" class="">Harold Brennan</a><a href="#o-tasha" class="">Tasha Morgan</a><a href="#o-darnell" class="">Darnell Price</a><a href="#o-eleanor" class="">Eleanor Whitfield</a><a href="#o-rosa" class="on">Rosa Delgado</a></div>
+  <div class="gout"><div class="col">
+    <div class="card"><h3>Who &amp; how</h3>
+      <div class="contact"><b class="">(419) 555-0127</b><span class="cmeta mute">Mobile · SMS opted in</span><span class="chip c-green" >Use</span></div>
+      <div class="chips"><span class="chip c-blue" >2–4 pm (works nights)</span> <span class="chip c-gray" >Spanish (preferred)</span></div>
+      <div class="row wrap"><button class="btn p" data-act="call">Call</button><button class="btn" data-act="sms-focus">SMS</button><button class="btn" data-act="video">Video</button><button class="btn" data-act="interp">Interpreter</button></div>
+      <div class="outcomes" role="group" aria-label="Call outcome"><span class="mute sm">Log outcome:</span><button class="btn xs" data-outcome="Connected">Connected</button><button class="btn xs" data-outcome="Voicemail">Voicemail</button><button class="btn xs" data-outcome="Wrong number">Wrong number</button><button class="btn xs" data-outcome="No answer">No answer</button><button class="btn xs" data-outcome="Call back">Call back</button></div>
+      <ul class="alog"></ul></div>
+    <div class="card aic smscard"><h3><span class="ai">AI draft</span> Message: edit before sending</h3><textarea class="smsbox" rows="5">Hola Rosa, soy Maria, enfermera de su plan Evergreen Health. ¿Podemos hablar hoy entre 2 y 3 pm sobre su insulina? Responda SÍ o una mejor hora. Responda STOP para no recibir mensajes.</textarea>
+      <div class="row"><button class="btn p" data-act="send-sms" data-reply="Sí, a las 2:30">Send (you)</button><span class="mute sm">AI never sends on its own. Opt-out included (TCPA).</span></div><div class="thread"></div></div>
+    <div class="card aic"><h3><span class="ai">AI</span> Pre-call agenda</h3><label class="chk"><input type="checkbox"> <span>Use interpreter / Spanish</span></label><label class="chk"><input type="checkbox"> <span>How are sugars? Any lows at work?</span></label><label class="chk"><input type="checkbox"> <span>Insulin: when did it stop and why?</span></label><label class="chk"><input type="checkbox"> <span>Metformin: where does she fill it?</span></label><label class="chk"><input type="checkbox"> <span>Offer 90-day fill + delivery</span></label><label class="chk"><input type="checkbox"> <span>Book PCP to review dose timing</span></label></div>
+  </div><div class="col">
+    <div class="card"><div class="cardhead"><h3>Your quick notes during the call</h3><span class="mute sm">type or dictate · ambient listening comes in v2</span></div>
+      <textarea class="notes" rows="5">Called 2:35 pm with Spanish interpreter. Stopped insulin in Sept after two lows on night shift. Metformin: buys at Walmart $4 list. Wants to restart if timing changes. PCP visit Fri.</textarea></div>
+    <div class="card aic"><div class="cardhead"><h3><span class="ai">AI draft</span> Structured note + assessment pre-fill</h3><span class="mute sm">every field tagged with its source</span></div>
+      <div class="field " data-i="0"><span class="lab">Reason for contact</span><span class="val">Rising-risk outreach: insulin gap, A1c 9.4%</span><span class="tagc"><span class="chip c-blue" >From record</span></span></div><div class="field " data-i="1"><span class="lab">Barrier</span><span class="val">Stopped insulin after night-shift lows</span><span class="tagc"><span class="chip c-green" >From call</span></span></div><div class="field " data-i="2"><span class="lab">Adherence</span><span class="val">Metformin: cash $4 program (not in claims)</span><span class="tagc"><span class="chip c-green" >From call</span></span></div><div class="field " data-i="3"><span class="lab">Plan</span><span class="val">PCP Fri 13 Nov: dose timing; 90-day fill</span><span class="tagc"><span class="chip c-green" >From call</span></span></div><div class="field needs" data-i="4"><span class="lab">Language on file</span><span class="val">Change to Spanish</span><span class="tagc"><span class="chip c-violet" >Needs your input</span><button class="btn xs" data-act="confirm-field">Confirm</button></span></div>
+      <div class="row"><button class="btn signbtn" data-act="sign" disabled>Sign note (1 need your input)</button><span class="signed" hidden></span></div>
+      <div class="mute sm">40-field assessment → 22 pre-filled from the record, 12 from this call, 6 need nurse judgement. Nothing is signed without review.</div></div>
+  </div><div class="col">
+    <div class="card"><h3>Tasks created from this call</h3><label class="chk"><input type="checkbox"> <span><b>Update preferred language</b><br><span class="mute">Eligibility team</span></span></label><label class="chk"><input type="checkbox"> <span><b>PCP: dose timing + monitor appeal</b><br><span class="mute">Message Dr. Shah</span></span></label><label class="chk"><input type="checkbox"> <span><b>90-day insulin fill + delivery</b><br><span class="mute">Pharmacy team</span></span></label><label class="chk"><input type="checkbox"> <span><b>Follow-up call (Spanish)</b><br><span class="mute">Mon 16 Nov, 2:30 pm</span></span></label>
+      <div class="mute sm">Tasks route to pharmacy, UM and social-work queues. You approve each one.</div></div>
+    <div class="card"><h3>Clocks</h3><div class="clk" data-i="0"><span class="chip c-amber" >Rising risk</span> <span class="mute">0.42 → 0.71</span></div><div class="clk" data-i="1"><span class="chip c-amber" >HEDIS glycemic status</span> <span class="mute">A1c &gt; 9: open</span></div><div class="clk" data-i="2"><span class="chip c-green" >No event deadline</span> <span class="mute">Plan this week</span></div></div>
+    <div class="card guard"><h3>Guardrails</h3><ul class="gl"><li>AI drafts; the nurse confirms and signs.</li><li>Every AI line cites a source.</li><li>No AI clinical risk assessment (e.g., suicide risk).</li><li>42 CFR Part 2 data shown only with consent.</li></ul></div>
+  </div></div></section>
+  <section id="guide" class="screen"><div class="topbar"><div class="tt"><h1>How to use this prototype</h1><span class="sub">CareCompass MVP · all data is synthetic</span></div>
+  <div class="legend"><span><span class="dot d-green"></span>fresh</span><span><span class="dot d-amber"></span>aging</span><span><span class="dot d-red"></span>stale / missing</span><span class="ai">AI</span><span>needs your confirmation</span></div></div>
+  <div class="card"><ol class="guide">
+    <li><b>Today's queue</b>: 5 members ranked by an explainable score. Try the filters; click a member.</li>
+    <li><b>Member 360</b>: read the cited AI brief, resolve a conflict ("Use …" buttons), accept or dismiss a next-best action (dismiss asks for a reason).</li>
+    <li><b>Outreach &amp; notes</b>: log a call outcome, send the AI-drafted SMS (a reply arrives), confirm the fields marked "Needs your input", then sign the note.</li>
+    <li>Suggested walkthroughs: <a href="#m-harold">Harold</a> (medication conflict), <a href="#o-darnell">Darnell</a> (unreachable → new number), <a href="#o-tasha">Tasha</a> (SMS → same-day visit).</li>
+  </ol><p class="mute">Fictional plan (Evergreen Health Plan, Ohio). Phone numbers use the reserved 555-01xx range. No real PHI.</p></div></section>
+  <section id="queue" class="screen">
+  <div class="topbar"><div class="tt"><h1>Good morning, Maria</h1><span class="sub">Monday 9 Nov 2026 · 8:02 am · Today's queue</span></div>
+  <div class="legend"><span><span class="dot d-green"></span>fresh</span><span><span class="dot d-amber"></span>aging</span><span><span class="dot d-red"></span>stale / missing</span><span class="ai">AI</span><span>needs your confirmation</span></div></div>
+  <div class="kpis">
+    <div class="kpi"><b>48</b><span>Active cases <em>(cap 55)</em></span></div>
+    <div class="kpi"><b class="t-red">6</b><span>New ADT alerts since Fri</span></div>
+    <div class="kpi"><b class="t-amber">3</b><span>Deadlines today / tomorrow</span></div>
+    <div class="kpi"><b class="t-violet">7</b><span>Data conflicts to resolve</span></div>
+    <div class="kpi"><b>2</b><span>New assignments: routed by language, licensure, program, acuity, capacity</span></div>
+  </div>
+  <div class="card">
+    <div class="cardhead"><h3>Who needs me today: ranked</h3>
+      <div class="filters" role="group" aria-label="Filter queue">
+        <button class="f on" data-filter="all">All (5)</button><button class="f" data-filter="deadline">Deadlines</button><button class="f" data-filter="alert">New alerts</button><button class="f" data-filter="unreachable">Hard to reach</button>
+      </div></div>
+    <p class="formula">Priority = 0.35 × clinical risk + 0.30 × time-criticality + 0.20 × actionable gap + 0.15 × reachable now. Every chip is a driver with a source.</p>
+    <table class="qt"><thead><tr><th style="width:74px">Priority</th><th style="width:210px">Member</th><th>Why now (drivers)</th><th style="width:150px">Clock</th><th style="width:250px">Next best action</th><th style="width:110px">Best time</th><th style="width:60px"></th></tr></thead>
+    <tbody>
+  <tr class="qrow" data-flags="deadline alert">
+    <td><div class="score">88.8</div><div class="bar"><i style="width:88.8%"></i></div><div class="tiny">#1</div></td>
+    <td><a class="mlink" href="#m-harold"><b>Harold Brennan</b></a> <span class="mute">71M</span><br><span class="mute">Medicare Advantage HMO · Transitions of Care</span></td>
+    <td><div class="chips"><span class="chip c-red" >HF discharge Sat</span><span class="chip c-red" >Med conflict: ACE-I + ARNI</span><span class="chip c-amber" >Entresto rejected (PA)</span><span class="chip c-amber" >No 7-day visit</span></div><div class="tiny">Risk 88 · Urgency 90 · Gap 95 · Reach 80</div></td>
+    <td><span class="chip c-amber" >TOC call due Tue</span></td>
+    <td><div class="nbaq">Call now: reconcile meds, fix Entresto PA, book visit by 14 Nov</div><span class="ai">AI-suggested</span></td>
+    <td class="nowrap">9–11 am · phone</td>
+    <td><a class="btn p sm" href="#m-harold">Open</a></td>
+  </tr>
+  <tr class="qrow" data-flags="deadline alert unreachable">
+    <td><div class="score">80.8</div><div class="bar"><i style="width:80.8%"></i></div><div class="tiny">#2</div></td>
+    <td><a class="mlink" href="#m-tasha"><b>Tasha Morgan</b></a> <span class="mute">27F</span><br><span class="mute">Medicaid MCO · Behavioral Health CM</span></td>
+    <td><div class="chips"><span class="chip c-red" >FUH 7-day closes TODAY</span><span class="chip c-red" >Discharged to shelter</span><span class="chip c-amber" >No BH visit booked</span><span class="chip c-gray" >Voicemail full</span></div><div class="tiny">Risk 75 · Urgency 100 · Gap 85 · Reach 50</div></td>
+    <td><span class="chip c-red" >FUH closes today</span></td>
+    <td><div class="nbaq">Text now; same-day telehealth; co-assign social worker</div><span class="ai">AI-suggested</span></td>
+    <td class="nowrap">SMS · midday</td>
+    <td><a class="btn p sm" href="#m-tasha">Open</a></td>
+  </tr>
+  <tr class="qrow" data-flags="alert unreachable">
+    <td><div class="score">71.3</div><div class="bar"><i style="width:71.3%"></i></div><div class="tiny">#3</div></td>
+    <td><a class="mlink" href="#m-darnell"><b>Darnell Price</b></a> <span class="mute">34M</span><br><span class="mute">Medicaid MCO · Complex CM · frequent ED use</span></td>
+    <td><div class="chips"><span class="chip c-red" >ED discharge 03:40 today</span><span class="chip c-red" >5 ED visits / 82 days</span><span class="chip c-amber" >Dead phone → new # found</span><span class="chip c-amber" >No controller since Jun</span></div><div class="tiny">Risk 70 · Urgency 85 · Gap 80 · Reach 35</div></td>
+    <td><span class="chip c-amber" >Reach today (ED)</span></td>
+    <td><div class="nbaq">Text + call new number; controller inhaler; PCP visit + ride</div><span class="ai">AI-suggested</span></td>
+    <td class="nowrap">SMS now · new #</td>
+    <td><a class="btn p sm" href="#m-darnell">Open</a></td>
+  </tr>
+  <tr class="qrow" data-flags="deadline">
+    <td><div class="score">68.5</div><div class="bar"><i style="width:68.5%"></i></div><div class="tiny">#4</div></td>
+    <td><a class="mlink" href="#m-eleanor"><b>Eleanor Whitfield</b></a> <span class="mute">82F</span><br><span class="mute">Dual-eligible D-SNP · Complex CM · D-SNP</span></td>
+    <td><div class="chips"><span class="chip c-red" >Fall ED 30 Oct</span><span class="chip c-red" >New lorazepam (Beers)</span><span class="chip c-amber" >Home-health auth pended 12 d</span><span class="chip c-amber" >Caregiver strain</span></div><div class="tiny">Risk 80 · Urgency 55 · Gap 75 · Reach 60</div></td>
+    <td><span class="chip c-amber" >Auth pended 12 days</span></td>
+    <td><div class="nbaq">Call daughter after 6 pm; escalate auth; flag lorazepam</div><span class="ai">AI-suggested</span></td>
+    <td class="nowrap">After 6 pm · daughter</td>
+    <td><a class="btn p sm" href="#m-eleanor">Open</a></td>
+  </tr>
+  <tr class="qrow" data-flags="">
+    <td><div class="score">55.3</div><div class="bar"><i style="width:55.3%"></i></div><div class="tiny">#5</div></td>
+    <td><a class="mlink" href="#m-rosa"><b>Rosa Delgado</b></a> <span class="mute">58F</span><br><span class="mute">Medicaid MCO · Rising-risk diabetes</span></td>
+    <td><div class="chips"><span class="chip c-amber" >Insulin gap ~43 days</span><span class="chip c-amber" >A1c 7.6 → 9.4</span><span class="chip c-violet" >Language mismatch</span><span class="chip c-gray" >No event trigger</span></div><div class="tiny">Risk 60 · Urgency 35 · Gap 70 · Reach 65</div></td>
+    <td><span class="chip c-green" >No deadline</span></td>
+    <td><div class="nbaq">Spanish call 2–3 pm; ask about night-shift lows</div><span class="ai">AI-suggested</span></td>
+    <td class="nowrap">2–4 pm · Spanish</td>
+    <td><a class="btn p sm" href="#m-rosa">Open</a></td>
+  </tr></tbody></table>
+    <div class="foot">Showing 5 of 48 cases. 43 cases with no new signal since the last contact are collapsed to prevent alert fatigue. Dismissing an action asks for a reason, which tunes the weights.</div>
+  </div></section>
+</main></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script>
+(function () {
+  'use strict';
+  var qs = function (s, r) { return (r || document).querySelector(s); };
+  var qsa = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var toastEl = qs('#toast'); var toastTimer;
+  function toast(msg) { toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 2600); }
+  var minutes = 2;
+  function clockStr() { minutes += 1; var m = 8 * 60 + minutes; var h = Math.floor(m / 60), mm = m % 60; return (h > 12 ? h - 12 : h) + ':' + (mm < 10 ? '0' : '') + mm + (h >= 12 ? ' pm' : ' am'); }
+  var lastKey = 'harold';
+  function syncNav() {
+    var h = location.hash.replace('#', '') || 'queue';
+    var parts = h.split('-'); if (parts.length > 1 && (parts[0] === 'm' || parts[0] === 'o')) { lastKey = parts.slice(1).join('-'); }
+    var mLink = qs('#nav-m'), oLink = qs('#nav-o');
+    if (mLink) mLink.setAttribute('href', '#m-' + lastKey);
+    if (oLink) oLink.setAttribute('href', '#o-' + lastKey);
+    qsa('.nav a').forEach(function (a) { a.classList.remove('on'); });
+    var target = h === 'queue' ? '#nav-q' : (parts[0] === 'm' ? '#nav-m' : (parts[0] === 'o' ? '#nav-o' : (h === 'guide' ? '#nav-g' : '#nav-q')));
+    var el = qs(target); if (el) el.classList.add('on');
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener('hashchange', syncNav); syncNav();
+
+  // Queue filters
+  qsa('.f').forEach(function (b) { b.addEventListener('click', function () {
+    qsa('.f').forEach(function (x) { x.classList.remove('on'); }); b.classList.add('on');
+    var f = b.getAttribute('data-filter'); var n = 0;
+    qsa('.qrow').forEach(function (r) { var show = f === 'all' || (' ' + r.getAttribute('data-flags') + ' ').indexOf(' ' + f + ' ') >= 0; r.style.display = show ? '' : 'none'; if (show) n++; });
+    toast(n + ' member' + (n === 1 ? '' : 's') + ' match "' + b.textContent.replace(/\s*\(.*\)/, '') + '"');
+  }); });
+
+  // Conflicts
+  qsa('[data-resolve]').forEach(function (b) { b.addEventListener('click', function () {
+    var tr = b.closest('tr'); var card = b.closest('.card'); var src = b.getAttribute('data-resolve');
+    tr.classList.remove('bad', 'warn'); tr.classList.add('ok');
+    qs('.cstat', tr).innerHTML = '<span class="chip c-green">Resolved: ' + (src === 'member' ? 'confirm with member' : 'use ' + src) + '</span><div class="tiny">Maria A. · ' + clockStr() + ' · logged to audit trail</div>';
+    var left = qsa('tr.bad, tr.warn', card).length; qs('.resolved-count', card).textContent = left ? left + ' conflict(s) left to resolve' : 'All conflicts resolved.';
+    toast('Conflict resolved and logged');
+  }); });
+
+  // Next best actions
+  qsa('.nba').forEach(function (item) {
+    var acc = qs('[data-act="accept"]', item), dis = qs('[data-act="dismiss"]', item), box = qs('.dismissbox', item), conf = qs('[data-act="confirm-dismiss"]', item);
+    acc.addEventListener('click', function () { item.classList.add('accepted'); acc.textContent = 'Accepted'; acc.classList.add('done'); acc.disabled = true; dis.disabled = true; toast('Action accepted: added to today\'s tasks'); });
+    dis.addEventListener('click', function () { box.hidden = !box.hidden; });
+    conf.addEventListener('click', function () { var r = qs('select', box).value; item.classList.add('dismissed'); box.hidden = true; acc.disabled = true; dis.textContent = 'Dismissed'; dis.disabled = true; toast('Dismissed: "' + r + '": feeds weight tuning'); });
+  });
+
+  // Outreach
+  qsa('section[data-key]').forEach(function (sec) {
+    var log = qs('.alog', sec);
+    var call = qs('[data-act="call"]', sec);
+    if (call) call.addEventListener('click', function () { toast('Dialing via click-to-call… log the outcome when done'); });
+    qsa('[data-act="video"],[data-act="interp"]', sec).forEach(function (b) { b.addEventListener('click', function () { toast(b.textContent + ' requested (simulated)'); }); });
+    var smsFocus = qs('[data-act="sms-focus"]', sec);
+    if (smsFocus) smsFocus.addEventListener('click', function () { var box = qs('.smsbox', sec); if (box) { box.focus(); toast('Edit the AI draft, then press Send'); } else { toast('No SMS consent on file for this member'); } });
+    qsa('[data-outcome]', sec).forEach(function (b) { b.addEventListener('click', function () {
+      var li = document.createElement('li'); li.textContent = clockStr() + ': ' + b.getAttribute('data-outcome'); log.appendChild(li);
+      if (b.getAttribute('data-outcome') === 'Wrong number') { var c = qs('.contact b', sec); if (c) c.classList.add('strike'); }
+      toast('Outcome "' + b.getAttribute('data-outcome') + '" logged: trains the best-time model');
+    }); });
+    var send = qs('[data-act="send-sms"]', sec);
+    if (send) send.addEventListener('click', function () {
+      var th = qs('.thread', sec), box = qs('.smsbox', sec);
+      var out = document.createElement('div'); out.className = 'bub out'; out.textContent = box.value; th.appendChild(out);
+      send.disabled = true; send.textContent = 'Sent ' + clockStr(); toast('SMS sent by you');
+      var reply = send.getAttribute('data-reply');
+      if (reply) setTimeout(function () { var inn = document.createElement('div'); inn.className = 'bub in'; inn.textContent = reply; th.appendChild(inn); toast('Reply received'); }, 1500);
+    });
+    var sign = qs('[data-act="sign"]', sec);
+    function refreshSign() { if (!sign) return; var left = qsa('.field.needs:not(.ok)', sec).length; sign.disabled = left > 0; sign.textContent = left ? 'Sign note (' + left + ' need your input)' : 'Sign note'; if (!left) sign.classList.add('p'); }
+    qsa('[data-act="confirm-field"]', sec).forEach(function (b) { b.addEventListener('click', function () { var f = b.closest('.field'); f.classList.add('ok'); b.remove(); refreshSign(); toast('Field confirmed'); }); });
+    if (sign) sign.addEventListener('click', function () {
+      var s = qs('.signed', sec); s.hidden = false; s.textContent = 'Signed by Maria Alvarez, RN · ' + clockStr() + ' · audit trail saved';
+      sign.disabled = true; sign.textContent = 'Signed';
+      var first = qs('.clk[data-i="0"] .chip', sec); if (first) { first.className = 'chip c-green'; first.textContent = 'Met: ' + first.textContent; }
+      toast('Note signed. Tasks sent to their queues.');
+    });
+  });
+})();
+</script>
+</body></html>
